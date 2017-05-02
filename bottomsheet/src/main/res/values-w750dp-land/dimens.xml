@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Resources for tablets and large phones while in landscape -->
+
+    <dimen name="bottomsheet_width">432dp</dimen>
+
+</resources>

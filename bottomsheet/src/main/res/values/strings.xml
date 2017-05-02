@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Better BottomSheet</string>
+
+    <string name="key_binding_default_toolbar_name" translatable="false">Modal-Toolbar-Title</string>
+
+    <string name="BackDropBottomSheetBehavior" translatable="false">com.u1f4f1.betterbottomsheet.behaviors.BackdropBottomSheetBehavior</string>
+    <string name="AnchorPointBottomSheetBehavior" translatable="false">com.u1f4f1.betterbottomsheet.behaviors.AnchorPointBottomSheetBehavior</string>
+    <string name="ScrollAwareFABBehavior" translatable="false">com.u1f4f1.betterbottomsheet.behaviors.ScrollAwareFABBehavior</string>
+    <string name="MergedAppBarLayoutBehavior" translatable="false">com.u1f4f1.betterbottomsheet.behaviors.MergedAppBarLayoutBehavior</string>
+    <string name="ScrollingAppBarLayoutBehavior" translatable="false">com.u1f4f1.betterbottomsheet.behaviors.ScrollingAppBarLayoutBehavior</string>
+    <string name="ShrinkBehavior" translatable="false">com.u1f4f1.betterbottomsheet.behaviors.ShrinkBehavior</string>
+</resources>

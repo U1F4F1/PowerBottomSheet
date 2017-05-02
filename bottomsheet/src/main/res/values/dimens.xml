@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- bottom sheet and map related dimens -->
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="anchor_point">300dp</dimen>
+    <dimen name="bottom_sheet_peek_height">160dp</dimen>
+    <dimen name="bottomsheet_width">@dimen/match_parent</dimen>
+
+    <!-- android defaults -->
+    <dimen name="wrap_content">-2dp</dimen>
+    <dimen name="match_parent">-1dp</dimen>
+
+</resources>

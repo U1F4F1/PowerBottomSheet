@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- references for the MergedAppBarLayoutBehavior to find Views with -->
+    <item name="expanded_toolbar" type="id"/>
+    <item name="background" type="id"/>
+</resources>
