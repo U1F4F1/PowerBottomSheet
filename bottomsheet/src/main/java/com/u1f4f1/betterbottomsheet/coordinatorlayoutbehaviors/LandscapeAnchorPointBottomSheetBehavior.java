@@ -1,45 +1,20 @@
-package com.u1f4f1.betterbottomsheet.behaviors;
+package com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Parcelable;
-import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+public class LandscapeAnchorPointBottomSheetBehavior<V extends View> extends AnchorPointBottomSheetBehavior<V> {
 
-public class TabletAnchorPointBottomSheetBehavior<V extends View> extends AnchorPointBottomSheetBehavior<V> {
-    @IntDef({STATE_EXPANDED, STATE_DRAGGING, STATE_ANCHOR_POINT, STATE_SETTLING, STATE_HIDDEN})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface State { }
-
-    @State int state = STATE_ANCHOR_POINT;
-
-    public TabletAnchorPointBottomSheetBehavior() {
+    public LandscapeAnchorPointBottomSheetBehavior() {
         super();
     }
 
-    public TabletAnchorPointBottomSheetBehavior(Context context, AttributeSet attrs) {
+    public LandscapeAnchorPointBottomSheetBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
-
-    @Override
-    public void onRestoreInstanceState(CoordinatorLayout parent, V child, Parcelable state) {
-        AnchorPointBottomSheetBehavior.SavedState ss = (AnchorPointBottomSheetBehavior.SavedState) state;
-        // Intermediate states are restored as the anchored state, collapse state is ignored
-        if (ss.state == STATE_DRAGGING || ss.state == STATE_SETTLING || ss.state == STATE_COLLAPSED) {
-            this.state = STATE_ANCHOR_POINT;
-            attemptToActivateBottomsheet(child);
-        } else {
-            this.state = ss.state;
-        }
-
-        lastStableState = this.state;
     }
 
     @Override
@@ -54,35 +29,48 @@ public class TabletAnchorPointBottomSheetBehavior<V extends View> extends Anchor
         int currentTop = child.getTop();
         int newTop = currentTop - dy;
 
-        // Force stop at the anchor - do not collapse
-        if (lastStableState == STATE_ANCHOR_POINT && newTop > anchorPoint) {
+        // Force stop at the anchor - do not go from collapsed to expanded in one scroll
+        if ((lastStableState == STATE_COLLAPSED && newTop < anchorPoint) ||
+                (lastStableState == STATE_EXPANDED && newTop > anchorPoint)) {
+
+            // eating all these events, don't move the view or update the callback for onSlide
             consumed[1] = dy;
-            ViewCompat.offsetTopAndBottom(child, anchorPoint - currentTop);
-            dispatchOnSlide(child.getTop());
+
             nestedScrolled = true;
             return;
         }
 
         if (dy > 0) { // Upward
+            logger.trace("upward");
             if (newTop < minOffset) {
+                logger.trace("newTop < minOffset");
                 consumed[1] = currentTop - minOffset;
                 ViewCompat.offsetTopAndBottom(child, -consumed[1]);
+                logger.trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.getTop(), -consumed[1]);
                 setStateInternal(STATE_EXPANDED);
             } else {
+                logger.trace("newTop >= minOffset");
                 consumed[1] = dy;
                 ViewCompat.offsetTopAndBottom(child, -dy);
+                logger.trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.getTop(), -dy);
                 setStateInternal(STATE_DRAGGING);
             }
         } else if (dy < 0) { // Downward
+            logger.trace("downward");
             if (!ViewCompat.canScrollVertically(target, -1)) {
+                logger.trace("can scroll vertically");
                 if (newTop <= maxOffset || hideable) {
+                    logger.trace("newTop <= maxOffset || hideable");
                     consumed[1] = dy;
                     ViewCompat.offsetTopAndBottom(child, -dy);
+                    logger.trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.getTop(), -dy);
                     setStateInternal(STATE_DRAGGING);
                 } else {
+                    logger.trace("newTop > maxOffset || hideable");
                     consumed[1] = currentTop - maxOffset;
                     ViewCompat.offsetTopAndBottom(child, -consumed[1]);
-                    setStateInternal(STATE_ANCHOR_POINT);
+                    logger.trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.getTop(), -consumed[1]);
+                    setStateInternal(STATE_COLLAPSED);
                 }
             }
         }
@@ -99,16 +87,17 @@ public class TabletAnchorPointBottomSheetBehavior<V extends View> extends Anchor
      * @return the next stable state that the sheet should settle at
      */
     @State
-    @SuppressLint("SwitchIntDef")
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     int getNextStableState(@State int currentState) {
         switch (currentState) {
-            case STATE_HIDDEN:
-                return STATE_ANCHOR_POINT;
+            case STATE_COLLAPSED:
+            case STATE_EXPANDED:
             case STATE_ANCHOR_POINT:
-                return STATE_EXPANDED;
+            case STATE_DRAGGING:
+            case STATE_SETTLING:
+            case STATE_HIDDEN:
             default:
-                return currentState;
+                return STATE_HIDDEN;
         }
     }
 
@@ -119,14 +108,15 @@ public class TabletAnchorPointBottomSheetBehavior<V extends View> extends Anchor
      * @return the next stable state that the sheet should settle at
      */
     @State
-    @SuppressLint("SwitchIntDef")
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     int getPreviousStableState(@State int currentState) {
         switch (currentState) {
+            case STATE_COLLAPSED:
             case STATE_EXPANDED:
-                return STATE_ANCHOR_POINT;
             case STATE_ANCHOR_POINT:
-                return STATE_HIDDEN;
+            case STATE_DRAGGING:
+            case STATE_SETTLING:
+            case STATE_HIDDEN:
             default:
                 return STATE_HIDDEN;
         }
@@ -158,8 +148,8 @@ public class TabletAnchorPointBottomSheetBehavior<V extends View> extends Anchor
     public void setState(@AnchorPointBottomSheetBehavior.State int state) {
         // we never collapse this sheet
         if (state == STATE_COLLAPSED) {
-            state = STATE_ANCHOR_POINT;
-            this.lastStableState = STATE_ANCHOR_POINT;
+            state = STATE_HIDDEN;
+            this.lastStableState = STATE_HIDDEN;
         }
 
         super.setState(state);
@@ -169,8 +159,8 @@ public class TabletAnchorPointBottomSheetBehavior<V extends View> extends Anchor
     void setStateInternal(@AnchorPointBottomSheetBehavior.State int state) {
         // we never collapse this sheet
         if (state == STATE_COLLAPSED) {
-            state = STATE_ANCHOR_POINT;
-            this.lastStableState = STATE_ANCHOR_POINT;
+            state = STATE_HIDDEN;
+            this.lastStableState = STATE_HIDDEN;
         }
         super.setStateInternal(state);
 

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge
+<!-- epoxy recyclerview that holds all the poi detail cards -->
+<android.support.v7.widget.RecyclerView
+    android:id="@+id/recyclerview"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="16dp"
     android:clipToPadding="false"
     xmlns:android="http://schemas.android.com/apk/res/android"/>

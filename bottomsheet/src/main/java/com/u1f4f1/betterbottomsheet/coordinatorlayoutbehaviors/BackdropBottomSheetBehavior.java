@@ -1,11 +1,10 @@
-package com.u1f4f1.betterbottomsheet.behaviors;
+package com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 
 import java.lang.ref.WeakReference;
@@ -55,11 +54,9 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
     @Override
     public boolean layoutDependsOn(CoordinatorLayout parent, View child, View dependency) {
         if (dependency instanceof NestedScrollView) {
-            try {
-                AnchorPointBottomSheetBehavior.from(dependency);
+            if (AnchorPointBottomSheetBehavior.from(dependency) != null) {
                 return true;
             }
-            catch (IllegalArgumentException ignored){}
         }
         return false;
     }
@@ -78,12 +75,7 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
 
         if (behaviorGoogleMapsLikeWeakReference.get() instanceof TabletAnchorPointBottomSheetBehavior) {
             // eat touch events on this to prevent dragging this view to collapse the bottom sheet
-            coordinatorLayout.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return true;
-                }
-            });
+            coordinatorLayout.setOnTouchListener((v, event) -> true);
         }
 
         /*

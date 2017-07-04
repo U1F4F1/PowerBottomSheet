@@ -1,14 +1,15 @@
-package com.u1f4f1.betterbottomsheet.behaviors;
+package com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 
 import java.lang.ref.WeakReference;
 
@@ -30,7 +31,7 @@ import java.lang.ref.WeakReference;
  * This class only cares about hide or unhide the FAB because the anchor behavior is something
  * already in FAB.
  */
-public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
+public class ScrollAwareBehavior<V extends View> extends CoordinatorLayout.Behavior<V> {
 
     /**
      * One of the point used to set hide() or show() in FAB
@@ -45,48 +46,49 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
      */
     private WeakReference<AnchorPointBottomSheetBehavior> mBottomSheetBehaviorRef;
 
-    public ScrollAwareFABBehavior(Context context, AttributeSet attrs) {
+    public ScrollAwareBehavior(Context context, AttributeSet attrs) {
         super();
         offset = 0;
         mBottomSheetBehaviorRef = null;
+
+        TypedValue tv = new TypedValue();
+        if (context.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            offset = TypedValue.complexToDimensionPixelSize(tv.data, context.getResources().getDisplayMetrics());
+        }
     }
 
     @Override
-    public boolean onStartNestedScroll(final CoordinatorLayout coordinatorLayout, final FloatingActionButton child,
+    public boolean onStartNestedScroll(final CoordinatorLayout coordinatorLayout, final View child,
                                        final View directTargetChild, final View target, final int nestedScrollAxes) {
         // Ensure we react to vertical scrolling
         return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL;
     }
 
     @Override
-    public boolean layoutDependsOn(CoordinatorLayout parent, FloatingActionButton child, View dependency) {
+    public boolean layoutDependsOn(CoordinatorLayout parent, View child, View dependency) {
         if (dependency instanceof NestedScrollView) {
-            try {
-                AnchorPointBottomSheetBehavior.from(dependency);
+            if (AnchorPointBottomSheetBehavior.from(dependency) != null) {
                 return true;
-            } catch (IllegalArgumentException ignored) { }
+            }
         }
         return false;
     }
 
     @Override
-    public boolean onDependentViewChanged(CoordinatorLayout coordinatorLayout, FloatingActionButton floatingActionButton, View bottomSheet) {
-        float startingY = floatingActionButton.getY();
-
-        // Because we are not moving it, we always return false in this method.
-        if (offset == 0) {
-            setOffsetValue(coordinatorLayout);
-        }
-
+    public boolean onDependentViewChanged(CoordinatorLayout coordinatorLayout, View child, View bottomSheet) {
         if (mBottomSheetBehaviorRef == null) {
             getBottomSheetBehavior(coordinatorLayout);
         }
 
-        int DyFix = getDyBetweenChildAndDependency(floatingActionButton, bottomSheet);
+        if (child instanceof ViewGroup) {
+            return onDependentViewChanged(coordinatorLayout, ((ViewGroup) child), bottomSheet);
+        }
 
-        if ((floatingActionButton.getY() + DyFix) < offset) {
-            floatingActionButton.setVisibility(View.INVISIBLE);
-        } else if ((floatingActionButton.getY() + DyFix) >= offset) {
+        int DyFix = getDyBetweenChildAndDependency(child, bottomSheet);
+
+        if ((child.getY() + DyFix) < offset) {
+            child.setVisibility(View.INVISIBLE);
+        } else if ((child.getY() + DyFix) >= offset) {
             /*
              * We are calculating every time point in Y where BottomSheet get {@link BottomSheetBehaviorGoogleMapsLike#STATE_COLLAPSED}.
              * If PeekHeight change dynamically we can reflect the behavior asap.
@@ -97,31 +99,64 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
 
             int collapsedY = bottomSheet.getHeight() - mBottomSheetBehaviorRef.get().getPeekHeight();
 
-            if ((floatingActionButton.getY() + DyFix) > collapsedY) {
-                floatingActionButton.setVisibility(View.INVISIBLE);
-            } else {
-                floatingActionButton.setVisibility(View.VISIBLE);
-            }
-        }
+            if ((child.getY() + DyFix) > collapsedY) {
 
-        if (floatingActionButton.getY() != startingY) {
-            throw new RuntimeException("fuck");
+                child.setVisibility(View.INVISIBLE);
+
+            } else {
+                child.setVisibility(View.VISIBLE);
+            }
         }
 
         return false;
     }
 
     /**
-     * In some <bold>WEIRD</bold> cases, mostly when you perform a little scroll but a fast one
-     * the {@link #onDependentViewChanged(CoordinatorLayout, FloatingActionButton, View)} DOESN'T
-     * reflect the real Y position of child mean the dependency get a better APROXIMATION of the real
-     * Y. This was causing that FAB some times doesn't get unhidden.
-     *
-     * @param child      the FAB
-     * @param dependency NestedScrollView instance
-     * @return Dy betweens those 2 elements in Y, minus child's height/2
+     * if the view passed in is a view group, we look for a {@link FloatingActionButton} in its children
+     * so we can show and hide it as we scroll. The case where we have a {@link FloatingActionButton}
+     * wrapped in something like a framelayout so we can anchor it to an element in the middle of the
+     * screen and still apply padding. In the event that we nest the {@link FloatingActionButton} in a
+     * {@link ViewGroup} any {@link CoordinatorLayout.Behavior} will be
+     * stripped, hence we add them to the parent in this case.
      */
-    private int getDyBetweenChildAndDependency(@NonNull FloatingActionButton child, @NonNull View dependency) {
+    private boolean onDependentViewChanged(CoordinatorLayout coordinatorLayout, ViewGroup child, View bottomSheet) {
+        int DyFix = getDyBetweenChildAndDependency(child, bottomSheet);
+
+        if ((child.getY() + DyFix) < offset) {
+            for (int i = 0; i < child.getChildCount(); i++) {
+                View fab = child.getChildAt(i);
+                if (fab instanceof FloatingActionButton) {
+                    ((FloatingActionButton) fab).hide();
+                }
+            }
+        } else if ((child.getY() + DyFix) >= offset) {
+            if (mBottomSheetBehaviorRef == null || mBottomSheetBehaviorRef.get() == null) {
+                getBottomSheetBehavior(coordinatorLayout);
+            }
+
+            int collapsedY = bottomSheet.getHeight() - mBottomSheetBehaviorRef.get().getPeekHeight();
+
+            if ((child.getY() + DyFix) > collapsedY) {
+                for (int i = 0; i < child.getChildCount(); i++) {
+                    View fab = child.getChildAt(i);
+                    if (fab instanceof FloatingActionButton) {
+                        ((FloatingActionButton) fab).hide();
+                    }
+                }
+            } else {
+                for (int i = 0; i < child.getChildCount(); i++) {
+                    View fab = child.getChildAt(i);
+                    if (fab instanceof FloatingActionButton) {
+                        ((FloatingActionButton) fab).show();
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private int getDyBetweenChildAndDependency(@NonNull View child, @NonNull View dependency) {
         if (dependency.getY() == 0 || dependency.getY() < offset) {
             return 0;
         }
@@ -130,26 +165,6 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
             return Math.max(0, (int) ((dependency.getY() - (child.getHeight() / 2)) - child.getY()));
         } else {
             return 0;
-        }
-    }
-
-    /**
-     * Define one of the point in where the FAB should be hide when it reachs that point.
-     *
-     * @param coordinatorLayout container of BottomSheet and AppBarLayout
-     */
-    private void setOffsetValue(CoordinatorLayout coordinatorLayout) {
-
-        for (int i = 0; i < coordinatorLayout.getChildCount(); i++) {
-            View child = coordinatorLayout.getChildAt(i);
-
-            if (child instanceof AppBarLayout) {
-
-                if (child.getTag() != null && child.getTag().toString().contentEquals("modal-appbar")) {
-                    offset = child.getY() + child.getHeight();
-                    break;
-                }
-            }
         }
     }
 
@@ -169,7 +184,8 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
                     AnchorPointBottomSheetBehavior temp = AnchorPointBottomSheetBehavior.from(child);
                     mBottomSheetBehaviorRef = new WeakReference<>(temp);
                     break;
-                } catch (IllegalArgumentException ignored) { }
+                } catch (IllegalArgumentException ignored) {
+                }
             }
         }
     }

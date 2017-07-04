@@ -1,13 +1,13 @@
-package com.u1f4f1.betterbottomsheet.behaviors;
+package com.u1f4f1.betterbottomsheet.bottomsheet
 
 /**
  * Google makes it really hard to replace their stupid int defs with an enum, because they use
  * these constants for all kinds of animation calls within the framework.
- *
+
  * I'm leaving this in to make it easier to get the name from a constant while logging or in
  * the debugger.
  */
-public enum BottomSheetStates {
+enum class BottomSheetStates(private val id: Int, private val value: String) {
     /**
      * The bottom sheet is dragging.
      */
@@ -38,27 +38,14 @@ public enum BottomSheetStates {
      */
     STATE_ANCHOR_POINT(6, "STATE_ANCHOR_POINT");
 
-    private int id;
-    private String value;
-
-    BottomSheetStates(int id, String value) {
-        this.id = id;
-        this.value = value;
+    override fun toString(): String {
+        return value
     }
 
-    public static BottomSheetStates fromInt(int state) {
-        for (BottomSheetStates s : BottomSheetStates.values()) {
-            if (s.id == state) {
-                return s;
-            }
+    companion object {
+        fun fromInt(state: Int): BottomSheetStates {
+            // we want controls to default to this
+            return BottomSheetStates.values().firstOrNull { it.id == state } ?: STATE_HIDDEN
         }
-
-        // we want controls to default to this
-        return STATE_HIDDEN;
-    }
-
-    @Override
-    public String toString() {
-        return value;
     }
 }

@@ -1,4 +1,4 @@
-package com.u1f4f1.betterbottomsheet.behaviors;
+package com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -26,7 +26,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-
 import com.u1f4f1.betterbottomsheet.R;
 
 import java.lang.ref.WeakReference;
@@ -86,11 +85,9 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
     @Override
     public boolean layoutDependsOn(CoordinatorLayout parent, View child, View dependency) {
         if (dependency instanceof NestedScrollView) {
-            try {
-                AnchorPointBottomSheetBehavior.from(dependency);
+            if (AnchorPointBottomSheetBehavior.from(dependency) != null) {
                 return true;
             }
-            catch (IllegalArgumentException e){}
         }
         return false;
     }
@@ -158,6 +155,7 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
         mInitialY = child.getY();
 
         child.setVisibility(mVisible ? View.VISIBLE : View.INVISIBLE);
+//        setStatusBarBackgroundVisible(isVisible);
 
         setFullBackGroundColor(mVisible && mCurrentTitleAlpha == 1 ? R.color.colorPrimary: android.R.color.transparent);
         setPartialBackGroundHeight(0);
