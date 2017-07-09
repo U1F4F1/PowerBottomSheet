@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context="com.u1f4f1.sample.MainActivity">
 
-    <com.u1f4f1.betterbottomsheet.BottomSheet
+    <com.u1f4f1.sample.SampleBottomSheet
         android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,57 +18,6 @@
         app:behavior_hideable="true"
         app:behavior_peekHeight="@dimen/bottom_sheet_peek_height"
         app:layout_behavior="@string/AnchorPointBottomSheetBehavior"
-        >
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:layout_margin="16dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Hello World!"/>
-
-                <TextView
-                    android:layout_margin="16dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Hello World!"/>
-
-                <TextView
-                    android:layout_margin="16dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Hello World!"/>
-
-                <TextView
-                    android:layout_margin="16dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Hello World!"/>
-
-                <TextView
-                    android:layout_margin="16dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Hello World!"/>
-
-                <TextView
-                    android:layout_margin="16dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Hello World!"/>
-
-            </LinearLayout>
-
-        </ScrollView>
-
-    </com.u1f4f1.betterbottomsheet.BottomSheet>
+        />
 
 </android.support.design.widget.CoordinatorLayout>

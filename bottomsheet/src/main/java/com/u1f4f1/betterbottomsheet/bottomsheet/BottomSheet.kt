@@ -4,6 +4,8 @@ package com.u1f4f1.betterbottomsheet.bottomsheet
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
+import android.support.design.widget.BottomSheetBehavior
 import android.support.v4.view.ViewCompat
 import android.support.v4.widget.NestedScrollView
 import android.support.v7.widget.LinearLayoutManager
@@ -14,6 +16,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
+import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior.BottomSheetSlideCallback
 
 import java.util.ArrayList
 
@@ -37,23 +40,13 @@ abstract class BottomSheet : NestedScrollView {
 
     internal var logger: Logger = ConsoleLogger("ANDROIDISBAD")
 
+    constructor(context: Context?) : super(context)
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+
     interface OnSheetActivatedListener {
         fun isActivated(isActive: Boolean)
     }
-
-    constructor(context: Context) : super(context) {
-        inflateLayout(context, null)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        inflateLayout(context, attrs)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        inflateLayout(context, attrs)
-    }
-
-    internal abstract fun inflateLayout(context: Context, attrs: AttributeSet?)
 
     fun setActivatedListener(activatedListener: OnSheetActivatedListener) {
         this.activatedListener = activatedListener
@@ -63,7 +56,7 @@ abstract class BottomSheet : NestedScrollView {
         this.recyclerView?.adapter = null
     }
 
-    private fun setupRecyclerview(adapter: BottomSheetAdapter) {
+    fun setupRecyclerview(adapter: BottomSheetAdapter) {
         if (recyclerView == null) {
             throw RuntimeException("You must provide the BottomSheet with a RecyclerView before attaching an Adapter")
         }
@@ -79,7 +72,7 @@ abstract class BottomSheet : NestedScrollView {
             it.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
                 // this has to be so gross so we can remove this listener
                 override fun onGlobalLayout() {
-                    bottomSheetBehavior!!.state = AnchorPointBottomSheetBehavior.STATE_COLLAPSED
+                    bottomSheetBehavior!!.state = BottomSheetState.STATE_COLLAPSED
                     it.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 }
             })
@@ -88,7 +81,26 @@ abstract class BottomSheet : NestedScrollView {
         this.isNestedScrollingEnabled = true
         this.overScrollMode = View.OVER_SCROLL_ALWAYS
 
-        bottomSheetBehavior?.addBottomSheetStateCallback(this::onBottomSheetStateChanged)
+        val onBottomSheetStateChanged = object : AnchorPointBottomSheetBehavior.BottomSheetStateCallback {
+            override fun onStateChanged(bottomSheet: View, newState: BottomSheetState) {
+                if (postOnStableStateRunnables.get(newState.ordinal) != null && !postOnStableStateRunnables.get(newState.ordinal).isEmpty()) {
+                    for (runnable in postOnStableStateRunnables.get(newState.ordinal)) {
+                        runnable.run()
+                        postOnStableStateRunnables.get(newState.ordinal).remove(runnable)
+                    }
+                }
+
+                when (newState) {
+                    BottomSheetState.STATE_ANCHOR_POINT -> reset()
+                    BottomSheetState.STATE_COLLAPSED -> {
+                        isActive = false
+                        activatedListener?.isActivated(false)
+                        reset()
+                    }
+                }
+            }
+        }
+        bottomSheetBehavior!!.addBottomSheetStateCallback(onBottomSheetStateChanged)
     }
 
     fun reset() {
@@ -102,7 +114,7 @@ abstract class BottomSheet : NestedScrollView {
         bottomSheetBehavior?.addBottomSheetStateCallback(stateCallback)
     }
 
-    fun postOnStateChange(@AnchorPointBottomSheetBehavior.State state: Int, runnable: Runnable) {
+    fun postOnStateChange(state: BottomSheetState, runnable: Runnable) {
         if (bottomSheetBehavior == null) {
             throw RuntimeException("No BottomSheetBehavior attached")
         }
@@ -112,33 +124,14 @@ abstract class BottomSheet : NestedScrollView {
             return
         }
 
-        if (postOnStableStateRunnables.get(state) != null) {
-            postOnStableStateRunnables.get(state).add(runnable)
+        if (postOnStableStateRunnables.get(state.ordinal) != null) {
+            postOnStableStateRunnables.get(state.ordinal).add(runnable)
         } else {
-            postOnStableStateRunnables.put(state, object : ArrayList<Runnable>() {
+            postOnStableStateRunnables.put(state.ordinal, object : ArrayList<Runnable>() {
                 init {
                     add(runnable)
                 }
             })
-        }
-    }
-
-    @SuppressLint("SwitchIntDef")
-    internal fun onBottomSheetStateChanged(bottomSheet: View, @AnchorPointBottomSheetBehavior.State newState: Int) {
-        if (postOnStableStateRunnables.get(newState) != null && !postOnStableStateRunnables.get(newState).isEmpty()) {
-            for (runnable in postOnStableStateRunnables.get(newState)) {
-                runnable.run()
-                postOnStableStateRunnables.get(newState).remove(runnable)
-            }
-        }
-
-        when (newState) {
-            AnchorPointBottomSheetBehavior.STATE_ANCHOR_POINT -> reset()
-            AnchorPointBottomSheetBehavior.STATE_COLLAPSED -> {
-                isActive = false
-                activatedListener?.isActivated(false)
-                reset()
-            }
         }
     }
 }

@@ -3,5 +3,5 @@
     <!-- Resources for tablets and large phones while in landscape -->
 
     <!-- Defining a different name here so we don't need a separate layout to change the bottom sheet behavior to disable the collapsed state on tablets -->
-    <string name="AnchorPointBottomSheetBehavior" translatable="false">com.u1f4f1.betterbottomsheet.behaviors.TabletAnchorPointBottomSheetBehavior</string>
+    <string name="AnchorPointBottomSheetBehavior" translatable="false">com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.TabletAnchorPointBottomSheetBehavior</string>
 </resources>

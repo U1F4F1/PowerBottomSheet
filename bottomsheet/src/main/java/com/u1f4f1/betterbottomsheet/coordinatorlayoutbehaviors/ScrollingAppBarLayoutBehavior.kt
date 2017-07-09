@@ -54,7 +54,7 @@ class ScrollingAppBarLayoutBehavior(private val context: Context, attrs: Attribu
         }
 
         child.getChildAppBarLayout()?.let {
-            setAppBarVisible(it, dependency.y >= dependency.height - anchorPointBottomSheetBehavior!!.getPeekHeight())
+            setAppBarVisible(it, dependency.y >= dependency.height - anchorPointBottomSheetBehavior!!.peekHeight)
         }
 
         return true
@@ -79,7 +79,7 @@ class ScrollingAppBarLayoutBehavior(private val context: Context, attrs: Attribu
          */
         getBottomSheetBehavior(parent)
         anchorPointBottomSheetBehavior?.let { getBottomSheetBehavior(parent) }
-        val mCollapsedY = dependency.height - anchorPointBottomSheetBehavior!!.getPeekHeight()
+        val mCollapsedY = dependency.height - anchorPointBottomSheetBehavior!!.peekHeight
         isVisible = dependency.y >= mCollapsedY
 
         setStatusBarBackgroundVisible(isVisible)

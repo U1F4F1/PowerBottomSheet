@@ -7,7 +7,7 @@ package com.u1f4f1.betterbottomsheet.bottomsheet
  * I'm leaving this in to make it easier to get the name from a constant while logging or in
  * the debugger.
  */
-enum class BottomSheetStates constructor(private val id: Int, private val value: String) {
+enum class BottomSheetState constructor(private val id: Int, private val value: String) {
     /**
      * The bottom sheet is dragging.
      */
@@ -44,8 +44,8 @@ enum class BottomSheetStates constructor(private val id: Int, private val value:
 
     companion object {
 
-        fun fromInt(state: Int): BottomSheetStates {
-            for (s in BottomSheetStates.values()) {
+        fun fromInt(state: Int): BottomSheetState {
+            for (s in BottomSheetState.values()) {
                 if (s.id == state) {
                     return s
                 }

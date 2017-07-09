@@ -1,5 +1,6 @@
 package com.u1f4f1.betterbottomsheet.bottomsheet
 
+import android.view.View
 import com.airbnb.epoxy.EpoxyAdapter
 import com.airbnb.epoxy.EpoxyModel
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
@@ -9,13 +10,15 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
     val updates = LinkedBlockingDeque<Runnable>()
 
     init {
-        behavior.addBottomSheetStateCallback { _, _ ->
-            run {
+        val onBottomSheetStateChanged = object : AnchorPointBottomSheetBehavior.BottomSheetStateCallback {
+            override fun onStateChanged(bottomSheet: View, newState: BottomSheetState) {
                 for (i in 0..updates.size - 1) {
                     updates.pop()?.run()
                 }
             }
         }
+
+        behavior.addBottomSheetStateCallback(onBottomSheetStateChanged)
     }
 
     override fun notifyModelChanged(model: EpoxyModel<*>?) {
