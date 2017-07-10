@@ -25,7 +25,7 @@ abstract class BottomSheet : NestedScrollView {
     private var activatedListener: OnSheetActivatedListener? = null
     private var bottomSheetAdapter: BottomSheetAdapter? = null
 
-    var isActive: Boolean = false
+    open var isActive: Boolean = false
         set(isActive) {
             field = isActive
             activatedListener?.isActivated(isActive)
