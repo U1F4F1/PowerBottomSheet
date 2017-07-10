@@ -23,6 +23,8 @@ class ShrinkBehavior(context: Context, attrs: AttributeSet) : CoordinatorLayout.
 
             for (i in 0..dependencies.size - 1) {
                 val view = dependencies[i]
+
+                // todo handle arbitrary classes here
                 var c = BottomSheet::class.java
 
                 val classes = arrayOf(BottomSheet::class)

@@ -70,7 +70,7 @@ class BackdropBottomSheetBehavior<V : View>(context: Context, attrs: AttributeSe
 
         if (behaviorGoogleMapsLikeWeakReference!!.get() is TabletAnchorPointBottomSheetBehavior<*>) {
             // eat touch events on this to prevent dragging this view to collapse the bottom sheet
-            coordinatorLayout!!.setOnTouchListener { v, event -> true }
+            coordinatorLayout!!.setOnTouchListener { _, _ -> true }
         }
 
         /*

@@ -19,43 +19,24 @@ package com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
-import android.os.Parcel
 import android.os.Parcelable
 import android.support.annotation.VisibleForTesting
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.CoordinatorLayout
-import android.support.v4.os.ParcelableCompat
-import android.support.v4.os.ParcelableCompatCreatorCallbacks
-import android.support.v4.view.AbsSavedState
-import android.support.v4.view.GestureDetectorCompat
-import android.support.v4.view.MotionEventCompat
-import android.support.v4.view.NestedScrollingChild
-import android.support.v4.view.VelocityTrackerCompat
-import android.support.v4.view.ViewCompat
+import android.support.v4.view.*
 import android.support.v4.widget.ViewDragHelper
 import android.util.AttributeSet
 import android.util.SparseIntArray
-import android.view.MotionEvent
-import android.view.VelocityTracker
-import android.view.View
-import android.view.ViewConfiguration
-import android.view.ViewGroup
-
+import android.view.*
 import com.kylealanr.gesturedetectors.GestureDetectors
 import com.u1f4f1.betterbottomsheet.R
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheet
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.betterbottomsheet.bottomsheet.SavedState
-import com.u1f4f1.betterbottomsheet.logLevel
-import com.u1f4f1.betterbottomsheet.trace
-
-import org.jetbrains.annotations.Contract
-
-import java.lang.ref.WeakReference
-import java.util.concurrent.CopyOnWriteArrayList
-
 import inkapplicaitons.android.logger.ConsoleLogger
 import inkapplicaitons.android.logger.Logger
+import java.lang.ref.WeakReference
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * An interaction behavior plugin for a child view of [CoordinatorLayout] to make it work as
@@ -470,7 +451,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         val verticalNestedScroll = nestedScrollAxes and ViewCompat.SCROLL_AXIS_VERTICAL != 0
 
         if (child is ViewGroup) {
-            directTargetChildDescendsFromChild = recursivelyCheckIfDescendedFrom(directTargetChild, child as ViewGroup)
+            directTargetChildDescendsFromChild = recursivelyCheckIfDescendedFrom(directTargetChild, child)
         }
 
         // only handle scrolls for children of the Child that scroll vertically
@@ -905,7 +886,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 top = maxOffset
                 targetState = BottomSheetState.STATE_COLLAPSED
             }
-            if (viewDragHelper!!.settleCapturedViewAt(releasedChild!!.left, top)) {
+            if (viewDragHelper!!.settleCapturedViewAt(releasedChild.left, top)) {
                 logger.trace("settling captured view")
                 setStateInternal(BottomSheetState.STATE_SETTLING)
                 ViewCompat.postOnAnimation(releasedChild, SettleRunnable(releasedChild, targetState))
@@ -1001,6 +982,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 return null
             }
 
+            @Suppress("UNCHECKED_CAST")
             return behavior as AnchorPointBottomSheetBehavior<V>?
         }
     }

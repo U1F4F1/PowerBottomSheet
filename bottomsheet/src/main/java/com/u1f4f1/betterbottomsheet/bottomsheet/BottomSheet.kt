@@ -2,10 +2,7 @@
 
 package com.u1f4f1.betterbottomsheet.bottomsheet
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.location.Location
-import android.support.design.widget.BottomSheetBehavior
 import android.support.v4.view.ViewCompat
 import android.support.v4.widget.NestedScrollView
 import android.support.v7.widget.LinearLayoutManager
@@ -14,15 +11,10 @@ import android.util.AttributeSet
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewTreeObserver
-import com.u1f4f1.betterbottomsheet.R
-
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
-import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior.BottomSheetSlideCallback
-
-import java.util.ArrayList
-
 import inkapplicaitons.android.logger.ConsoleLogger
 import inkapplicaitons.android.logger.Logger
+import java.util.*
 
 abstract class BottomSheet : NestedScrollView {
     var recyclerView: RecyclerView? = null
@@ -91,6 +83,7 @@ abstract class BottomSheet : NestedScrollView {
                     }
                 }
 
+                @Suppress("NON_EXHAUSTIVE_WHEN")
                 when (newState) {
                     BottomSheetState.STATE_ANCHOR_POINT -> reset()
                     BottomSheetState.STATE_COLLAPSED -> {

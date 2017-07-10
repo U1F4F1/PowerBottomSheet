@@ -6,7 +6,6 @@ import android.support.design.widget.CoordinatorLayout
 import android.support.v4.view.ViewCompat
 import android.util.AttributeSet
 import android.view.View
-import com.u1f4f1.betterbottomsheet.R.attr.anchorPoint
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.betterbottomsheet.trace
 

@@ -31,7 +31,7 @@ import java.lang.ref.WeakReference
  * This class only cares about hide or unhide the FAB because the anchor behavior is something
  * already in FAB.
  */
-class ScrollAwareBehavior<V : View>(context: Context, attrs: AttributeSet) : CoordinatorLayout.Behavior<V>() {
+class ScrollAwareBehavior<V : View>(context: Context, @Suppress("UNUSED_PARAMETER") attrs: AttributeSet) : CoordinatorLayout.Behavior<V>() {
 
     /**
      * One of the point used to set hide() or show() in FAB
