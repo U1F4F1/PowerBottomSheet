@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="default_margin">16dp</dimen>
+    <dimen name="default_margin_quarter">4dp</dimen>
+    <dimen name="default_margin_half">8dp</dimen>
+    <dimen name="default_margin_three_quarters">12dp</dimen>
+    <dimen name="default_margin_one_and_one_quarter">20dp</dimen>
+    <dimen name="default_margin_one_and_one_half">24dp</dimen>
+    <dimen name="default_margin_one_and_three_quarters">28dp</dimen>
+    <dimen name="default_margin_double">32dp</dimen>
+    <dimen name="default_margin_two_and_a_half">40dp</dimen>
+    <dimen name="default_padding">16dp</dimen>
+    <dimen name="default_padding_half">8dp</dimen>
+    <dimen name="default_padding_quarter">4dp</dimen>
+</resources>

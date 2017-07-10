@@ -1,5 +1,9 @@
 package com.u1f4f1.betterbottomsheet.bottomsheet
 
+import android.annotation.TargetApi
+import android.os.Build
+import android.support.v7.widget.RecyclerView
+import android.transition.TransitionManager
 import android.view.View
 import com.airbnb.epoxy.EpoxyAdapter
 import com.airbnb.epoxy.EpoxyModel
@@ -8,6 +12,7 @@ import java.util.concurrent.LinkedBlockingDeque
 
 abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*>) : EpoxyAdapter() {
     val updates = LinkedBlockingDeque<Runnable>()
+    lateinit var recyclerViewTransitionRunnable: Runnable
 
     init {
         val onBottomSheetStateChanged = object : AnchorPointBottomSheetBehavior.BottomSheetStateCallback {
@@ -52,5 +57,17 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
         }
 
         super.notifyModelsChanged()
+    }
+
+    @TargetApi(19)
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView?) {
+        super.onAttachedToRecyclerView(recyclerView)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            recyclerViewTransitionRunnable = Runnable { TransitionManager.beginDelayedTransition(recyclerView) }
+        } else {
+            // I would rather invoke an empty lambda than have to check for null everywhere
+            recyclerViewTransitionRunnable = Runnable { }
+        }
     }
 }

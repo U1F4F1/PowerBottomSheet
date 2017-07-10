@@ -10,22 +10,28 @@ import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetAdapter;
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState;
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior;
 
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 public class MainActivity extends AppCompatActivity {
 
     AnchorPointBottomSheetBehavior<BottomSheet> bottomSheetBehavior;
+    SampleAdapter sampleAdapter;
+
+    private BottomSheet bottomSheet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         final int activeColor = ContextCompat.getColor(this, R.color.colorAccent);
         final int inactiveColor = ContextCompat.getColor(this, R.color.colorPrimaryDark);
 
-        final BottomSheet bottomSheet = ((BottomSheet) findViewById(R.id.bottom_sheet));
+        bottomSheet = ((BottomSheet) findViewById(R.id.bottom_sheet));
 
         bottomSheetBehavior = AnchorPointBottomSheetBehavior.Companion.from(bottomSheet);
-        bottomSheetBehavior.setState(BottomSheetState.STATE_COLLAPSED);
 
         bottomSheet.setActivatedListener(new BottomSheet.OnSheetActivatedListener() {
             @Override
@@ -37,6 +43,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        sampleAdapter = new SampleAdapter(bottomSheetBehavior);
+        bottomSheet.setupRecyclerview(sampleAdapter);
+    }
+
+    @OnClick(R.id.button)
+    void onClick() {
+        sampleAdapter.addFakeViews();
+        bottomSheetBehavior.setState(BottomSheetState.STATE_COLLAPSED);
     }
 
     @Override

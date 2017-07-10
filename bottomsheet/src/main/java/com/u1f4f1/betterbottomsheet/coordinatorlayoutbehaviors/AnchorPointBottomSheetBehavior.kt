@@ -125,23 +125,23 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
          * @attr ref android.support.design.R.styleable#BottomSheetBehavior_Layout_behavior_peekHeight
          */
         set(value) {
-        var layout = false
-        if (peekHeight == PEEK_HEIGHT_AUTO) {
-            if (!peekHeightAuto) {
-                peekHeightAuto = true
+            var layout = false
+            if (peekHeight == PEEK_HEIGHT_AUTO) {
+                if (!peekHeightAuto) {
+                    peekHeightAuto = true
+                    layout = true
+                }
+            } else if (peekHeightAuto || this.peekHeight != value) {
+                peekHeightAuto = false
+                field = Math.max(0, value)
+                maxOffset = parentHeight - peekHeight
                 layout = true
             }
-        } else if (peekHeightAuto || this.peekHeight != peekHeight) {
-            peekHeightAuto = false
-            field = Math.max(0, peekHeight)
-            maxOffset = parentHeight - peekHeight
-            layout = true
-        }
 
-        if (layout && state == BottomSheetState.STATE_COLLAPSED && viewRef != null) {
-            val view = viewRef!!.get()
-            view?.requestLayout()
-        }
+            if (layout && state == BottomSheetState.STATE_COLLAPSED && viewRef != null) {
+                val view = viewRef!!.get()
+                view?.requestLayout()
+            }
     }
 
     protected var peekHeightAuto: Boolean = false
@@ -196,15 +196,17 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
          * *              [.STATE_HIDDEN].
          */
         set(value) {
-            logger.trace("setting state %s", state)
+            logger.trace("setting state %s", value)
 
-            if (state == this.state) {
+            if (value == this.state) {
                 return
             }
 
-            if (isStateStable(state)) {
-                field = state
-                this.lastStableState = state
+            if (isStateStable(value)) {
+                field = value
+                this.lastStableState = value
+            } else {
+                return
             }
 
             if (viewRef == null) {
@@ -224,9 +226,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             // Start the animation; wait until a pending layout if there is one.
             val parent = child.parent
             if (parent != null && parent.isLayoutRequested && ViewCompat.isAttachedToWindow(child)) {
-                child.post { startSettlingAnimation(child, state) }
+                child.post { startSettlingAnimation(child, value) }
             } else {
-                startSettlingAnimation(child, state)
+                startSettlingAnimation(child, value)
             }
         }
 
@@ -276,13 +278,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         height = context.resources.displayMetrics.heightPixels
 
         var a = context.obtainStyledAttributes(attrs, android.support.design.R.styleable.BottomSheetBehavior_Layout)
-        val value = a.peekValue(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight)
-        if (value != null && value.data == PEEK_HEIGHT_AUTO) {
-            peekHeight = value.data
-        } else {
-            peekHeight = a.getDimensionPixelSize(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, PEEK_HEIGHT_AUTO)
-        }
 
+        peekHeight = a.getDimensionPixelSize(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, PEEK_HEIGHT_AUTO)
         isHideable = a.getBoolean(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_hideable, false)
         skipCollapsed = a.getBoolean(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_skipCollapsed, false)
 

@@ -14,6 +14,7 @@ import android.util.AttributeSet
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewTreeObserver
+import com.u1f4f1.betterbottomsheet.R
 
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior.BottomSheetSlideCallback
@@ -24,7 +25,7 @@ import inkapplicaitons.android.logger.ConsoleLogger
 import inkapplicaitons.android.logger.Logger
 
 abstract class BottomSheet : NestedScrollView {
-    internal var recyclerView: RecyclerView? = null
+    var recyclerView: RecyclerView? = null
     private var bottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null
 
     private val postOnStableStateRunnables = SparseArray<MutableList<Runnable>>()

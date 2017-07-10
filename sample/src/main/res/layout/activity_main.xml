@@ -7,6 +7,15 @@
     android:layout_height="match_parent"
     tools:context="com.u1f4f1.sample.MainActivity">
 
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:elevation="0dp"
+        android:text="Show bottomsheet"
+        />
+
     <com.u1f4f1.sample.SampleBottomSheet
         android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
@@ -14,7 +23,7 @@
         app:layout_anchorGravity="bottom|start|left"
         app:anchorPoint="@dimen/anchor_point"
         android:background="@color/colorPrimaryDark"
-        app:elevation="8dp"
+        android:elevation="8dp"
         app:behavior_hideable="true"
         app:behavior_peekHeight="@dimen/bottom_sheet_peek_height"
         app:layout_behavior="@string/AnchorPointBottomSheetBehavior"
