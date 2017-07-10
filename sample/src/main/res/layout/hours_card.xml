@@ -273,7 +273,7 @@
                         android:layout_marginRight="@dimen/default_margin_double"
                         android:paddingTop="@dimen/default_padding_half"
                         android:paddingBottom="@dimen/default_padding_half"
-                        tools:text="9am to 10pm"
+                        android:text="9am to 10pm"
                         />
 
                 </RelativeLayout>

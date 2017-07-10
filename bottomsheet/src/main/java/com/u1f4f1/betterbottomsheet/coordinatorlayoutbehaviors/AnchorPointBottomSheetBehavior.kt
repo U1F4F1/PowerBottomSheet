@@ -100,7 +100,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     var anchorPoint: Int = 0
 
-    internal var lastStableState = BottomSheetState.STATE_HIDDEN
+    protected open var lastStableState = BottomSheetState.STATE_HIDDEN
 
     protected var maximumVelocity: Float = 0.toFloat()
 
@@ -295,7 +295,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         logger.info("height: %s, width: %s, anchorPoint: %s, peekHeight: %s, minOffset: %s, maxOffset: %s", Resources.getSystem().displayMetrics.heightPixels, Resources.getSystem().displayMetrics.widthPixels, anchorPoint, peekHeight, minOffset, maxOffset)
     }
 
-    private fun handleOnSingleTapUp(e: MotionEvent): Boolean {
+    protected open fun handleOnSingleTapUp(e: MotionEvent): Boolean {
         if (state == BottomSheetState.STATE_COLLAPSED) {
             if (viewRef!!.get() != null) {
                 (viewRef!!.get() as BottomSheet).isActive = true

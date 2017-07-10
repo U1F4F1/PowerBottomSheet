@@ -53,11 +53,11 @@ abstract class BottomSheet : NestedScrollView {
         this.activatedListener = activatedListener
     }
 
-    fun removeAdapter() {
+    open fun removeAdapter() {
         this.recyclerView?.adapter = null
     }
 
-    fun setupRecyclerview(adapter: BottomSheetAdapter) {
+    open fun setupRecyclerview(adapter: BottomSheetAdapter) {
         if (recyclerView == null) {
             throw RuntimeException("You must provide the BottomSheet with a RecyclerView before attaching an Adapter")
         }
@@ -104,7 +104,7 @@ abstract class BottomSheet : NestedScrollView {
         bottomSheetBehavior!!.addBottomSheetStateCallback(onBottomSheetStateChanged)
     }
 
-    fun reset() {
+    open fun reset() {
         ViewCompat.postOnAnimation(this) {
             smoothScrollTo(0, 0)
             logger.trace("bottomsheet settling")
