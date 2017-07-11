@@ -51,15 +51,15 @@ abstract class BottomSheet : NestedScrollView {
     }
 
     open fun setState(state: BottomSheetState) {
-        this.bottomSheetBehavior?.state = state
+        this.bottomSheetBehavior!!.state = state
     }
 
     open fun addBottomSheetStateCallback(callback: AnchorPointBottomSheetBehavior.BottomSheetStateCallback) {
-        this.bottomSheetBehavior?.addBottomSheetStateCallback(callback)
+        this.bottomSheetBehavior!!.addBottomSheetStateCallback(callback)
     }
 
     open fun addBottomSheetSlideCallback(callback: AnchorPointBottomSheetBehavior.BottomSheetSlideCallback) {
-        this.bottomSheetBehavior?.addBottomSheetSlideCallback(callback)
+        this.bottomSheetBehavior!!.addBottomSheetSlideCallback(callback)
     }
 
     open fun setupRecyclerview(adapter: BottomSheetAdapter) {
@@ -118,7 +118,7 @@ abstract class BottomSheet : NestedScrollView {
     }
 
     fun addOnStateChangedListener(stateCallback: AnchorPointBottomSheetBehavior.BottomSheetStateCallback) {
-        bottomSheetBehavior?.addBottomSheetStateCallback(stateCallback)
+        bottomSheetBehavior!!.addBottomSheetStateCallback(stateCallback)
     }
 
     fun postOnStateChange(state: BottomSheetState, runnable: Runnable) {
