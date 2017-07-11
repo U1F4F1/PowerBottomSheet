@@ -19,7 +19,7 @@ import java.util.*
 
 abstract class BottomSheet : NestedScrollView {
     var recyclerView: RecyclerView? = null
-    private var bottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null
+    protected var bottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null
 
     private val postOnStableStateRunnables = SparseArray<MutableList<Runnable>>()
 
