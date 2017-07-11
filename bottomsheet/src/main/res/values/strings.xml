@@ -5,7 +5,7 @@
 
     <string name="BackDropBottomSheetBehavior" translatable="false">com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.BackdropBottomSheetBehavior</string>
     <string name="AnchorPointBottomSheetBehavior" translatable="false">com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior</string>
-    <string name="ScrollAwareFABBehavior" translatable="false">com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.ScrollAwareFABBehavior</string>
+    <string name="ScrollAwareBehavior" translatable="false">com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.ScrollAwareBehavior</string>
     <string name="MergedAppBarLayoutBehavior" translatable="false">com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.MergedAppBarLayoutBehavior</string>
     <string name="ScrollingAppBarLayoutBehavior" translatable="false">com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.ScrollingAppBarLayoutBehavior</string>
     <string name="ShrinkBehavior" translatable="false">com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.ShrinkBehavior</string>
