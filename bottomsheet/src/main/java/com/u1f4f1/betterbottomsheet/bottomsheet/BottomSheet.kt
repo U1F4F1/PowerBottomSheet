@@ -3,6 +3,7 @@
 package com.u1f4f1.betterbottomsheet.bottomsheet
 
 import android.content.Context
+import android.support.design.widget.BottomSheetBehavior
 import android.support.v4.view.ViewCompat
 import android.support.v4.widget.NestedScrollView
 import android.support.v7.widget.LinearLayoutManager
@@ -47,6 +48,18 @@ abstract class BottomSheet : NestedScrollView {
 
     open fun removeAdapter() {
         this.recyclerView?.adapter = null
+    }
+
+    open fun setState(state: BottomSheetState) {
+        this.bottomSheetBehavior?.state = state
+    }
+
+    open fun addBottomSheetStateCallback(callback: AnchorPointBottomSheetBehavior.BottomSheetStateCallback) {
+        this.bottomSheetBehavior?.addBottomSheetStateCallback(callback)
+    }
+
+    open fun addBottomSheetSlideCallback(callback: AnchorPointBottomSheetBehavior.BottomSheetSlideCallback) {
+        this.bottomSheetBehavior?.addBottomSheetSlideCallback(callback)
     }
 
     open fun setupRecyclerview(adapter: BottomSheetAdapter) {
