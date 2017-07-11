@@ -76,10 +76,6 @@ class ScrollAwareBehavior<V : View>(context: Context, @Suppress("UNUSED_PARAMETE
             getBottomSheetBehavior(coordinatorLayout!!)
         }
 
-        if (child is ViewGroup) {
-            return onDependentViewChanged(coordinatorLayout, child, bottomSheet)
-        }
-
         val DyFix = getDyBetweenChildAndDependency(child, bottomSheet!!)
 
         if (child.y + DyFix < offset) {
