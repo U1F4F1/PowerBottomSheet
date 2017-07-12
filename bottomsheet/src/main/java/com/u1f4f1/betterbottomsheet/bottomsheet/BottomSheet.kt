@@ -19,12 +19,32 @@ import java.util.*
 
 abstract class BottomSheet : NestedScrollView {
     var recyclerView: RecyclerView? = null
-    protected var bottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null
+    protected open var bottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null
+        set(value) {
+            field = value
+
+            if (stateCallbacks.isNotEmpty()) {
+                stateCallbacks.forEach {
+                    field!!.addBottomSheetStateCallback(it)
+                    stateCallbacks.remove(it)
+                }
+            }
+
+            if (slideCallbacks.isNotEmpty()) {
+                slideCallbacks.forEach {
+                    field!!.addBottomSheetSlideCallback(it)
+                    slideCallbacks.remove(it)
+                }
+            }
+        }
 
     private val postOnStableStateRunnables = SparseArray<MutableList<Runnable>>()
 
     private var activatedListener: OnSheetActivatedListener? = null
     private var bottomSheetAdapter: BottomSheetAdapter? = null
+
+    private var stateCallbacks: MutableSet<AnchorPointBottomSheetBehavior.BottomSheetStateCallback> = mutableSetOf()
+    private var slideCallbacks: MutableSet<AnchorPointBottomSheetBehavior.BottomSheetSlideCallback> = mutableSetOf()
 
     open var isActive: Boolean = false
         set(isActive) {
