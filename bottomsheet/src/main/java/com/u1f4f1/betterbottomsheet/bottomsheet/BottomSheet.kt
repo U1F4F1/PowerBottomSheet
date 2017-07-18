@@ -13,6 +13,7 @@ import android.util.SparseArray
 import android.view.View
 import android.view.ViewTreeObserver
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
+import com.u1f4f1.betterbottomsheet.trace
 import inkapplicaitons.android.logger.ConsoleLogger
 import inkapplicaitons.android.logger.Logger
 import java.util.*
@@ -20,6 +21,7 @@ import java.util.*
 abstract class BottomSheet : NestedScrollView {
     var recyclerView: RecyclerView? = null
     protected open var bottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null
+        get() = field
         set(value) {
             field = value
 
@@ -48,11 +50,11 @@ abstract class BottomSheet : NestedScrollView {
 
     open var isActive: Boolean = false
         set(isActive) {
+            if (isActive == field) return
+
             field = isActive
             activatedListener?.isActivated(isActive)
         }
-
-    internal var logger: Logger = ConsoleLogger("ANDROIDISBAD")
 
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
@@ -75,11 +77,19 @@ abstract class BottomSheet : NestedScrollView {
     }
 
     open fun addBottomSheetStateCallback(callback: AnchorPointBottomSheetBehavior.BottomSheetStateCallback) {
-        this.bottomSheetBehavior!!.addBottomSheetStateCallback(callback)
+        if (this.bottomSheetBehavior == null) {
+            this.stateCallbacks.add(callback)
+        } else {
+            this.bottomSheetBehavior?.addBottomSheetStateCallback(callback)
+        }
     }
 
     open fun addBottomSheetSlideCallback(callback: AnchorPointBottomSheetBehavior.BottomSheetSlideCallback) {
-        this.bottomSheetBehavior!!.addBottomSheetSlideCallback(callback)
+        if (this.bottomSheetBehavior == null) {
+            this.slideCallbacks.add(callback)
+        } else {
+            this.bottomSheetBehavior?.addBottomSheetSlideCallback(callback)
+        }
     }
 
     open fun setupRecyclerview(adapter: BottomSheetAdapter) {
@@ -121,9 +131,9 @@ abstract class BottomSheet : NestedScrollView {
                     BottomSheetState.STATE_ANCHOR_POINT -> reset()
                     BottomSheetState.STATE_COLLAPSED -> {
                         isActive = false
-                        activatedListener?.isActivated(false)
                         reset()
                     }
+                    else -> isActive = true
                 }
             }
         }
@@ -133,7 +143,7 @@ abstract class BottomSheet : NestedScrollView {
     open fun reset() {
         ViewCompat.postOnAnimation(this) {
             smoothScrollTo(0, 0)
-            logger.trace("bottomsheet settling")
+            trace("bottomsheet settling")
         }
     }
 

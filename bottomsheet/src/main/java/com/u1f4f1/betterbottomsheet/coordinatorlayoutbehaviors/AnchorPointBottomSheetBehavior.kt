@@ -29,7 +29,7 @@ import android.util.AttributeSet
 import android.util.SparseIntArray
 import android.view.*
 import com.kylealanr.gesturedetectors.GestureDetectors
-import com.u1f4f1.betterbottomsheet.R
+import com.u1f4f1.betterbottomsheet.*
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheet
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.betterbottomsheet.bottomsheet.SavedState
@@ -128,8 +128,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     protected var peekHeightAuto: Boolean = false
     protected var peekHeightMin: Int = 0
 
-    protected var minOffset: Int = 0
-    protected var maxOffset: Int = 0
+    internal var minOffset: Int = 0
+    internal var maxOffset: Int = 0
 
     /**
      * Gets whether this bottom sheet can hide when it is swiped down.
@@ -177,7 +177,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
          * *              [.STATE_HIDDEN].
          */
         set(value) {
-            logger.trace("setting state %s", value)
+            trace("setting state %s", value)
 
             if (value == this.state) {
                 return
@@ -186,19 +186,17 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             if (isStateStable(value)) {
                 field = value
                 this.lastStableState = value
-            } else {
-                return
             }
 
             if (viewRef == null) {
                 // The view is not laid out yet; modify state and let onLayoutChild handle it later
-                logger.trace("view not laid out yet")
+                trace("view not laid out yet")
                 return
             }
 
             val child = viewRef!!.get()
             if (child == null) {
-                logger.trace("viewRef returned null")
+                trace("viewRef returned null")
                 return
             }
 
@@ -206,7 +204,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
             // Start the animation; wait until a pending layout if there is one.
             val parent = child.parent
-            if (parent != null && parent.isLayoutRequested && ViewCompat.isAttachedToWindow(child)) {
+            if (parent != null && parent.isLayoutRequested && ViewCompat.isAttachedToWindow(child) && isStateStable(value)) {
                 child.post { startSettlingAnimation(child, value) }
             } else {
                 startSettlingAnimation(child, value)
@@ -218,7 +216,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     protected var lastNestedScrollDy: Int = 0
 
     protected var nestedScrolled: Boolean = false
-    protected var parentHeight: Int = 0
+    internal var parentHeight: Int = 0
 
     protected var viewRef: WeakReference<V>? = null
 
@@ -273,7 +271,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         gestureDetectorCompat = GestureDetectorCompat(context, GestureDetectors.OnSingleTapUp({ handleOnSingleTapUp(it) }))
 
-        logger.info("height: %s, width: %s, anchorPoint: %s, peekHeight: %s, minOffset: %s, maxOffset: %s", Resources.getSystem().displayMetrics.heightPixels, Resources.getSystem().displayMetrics.widthPixels, anchorPoint, peekHeight, minOffset, maxOffset)
+        info("height: %s, width: %s, anchorPoint: %s, peekHeight: %s, minOffset: %s, maxOffset: %s, maximumVelocity: %s", Resources.getSystem().displayMetrics.heightPixels, Resources.getSystem().displayMetrics.widthPixels, anchorPoint, peekHeight, minOffset, maxOffset, maximumVelocity)
     }
 
     protected open fun handleOnSingleTapUp(e: MotionEvent): Boolean {
@@ -351,6 +349,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onInterceptTouchEvent(parent: CoordinatorLayout?, child: V?, event: MotionEvent?): Boolean {
+        debug("onInterceptTouchEvent($parent: CoordinatorLayout?, $child: V?, $event: MotionEvent?)")
         // send this event to the GestureDetector here so we can react to an event without subscribing to updates
         if (event!!.rawY > height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
             gestureDetectorCompat.onTouchEvent(event)
@@ -411,6 +410,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onTouchEvent(parent: CoordinatorLayout?, child: V?, event: MotionEvent?): Boolean {
+        debug("onTouchEvent($parent: CoordinatorLayout?, $child: V?, $event: MotionEvent?)")
         if (!child!!.isShown) {
             return false
         }
@@ -438,6 +438,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onStartNestedScroll(coordinatorLayout: CoordinatorLayout?, child: V?, directTargetChild: View?, target: View?, nestedScrollAxes: Int): Boolean {
+        trace("onStartNestedScroll($coordinatorLayout: CoordinatorLayout?, $child: V?, $directTargetChild: View?, $target: View?, $nestedScrollAxes: Int)")
         if (shouldScrollWithView.get(child!!.hashCode() + directTargetChild!!.hashCode(), -1) != -1) {
             return shouldScrollWithView.get(child.hashCode() + directTargetChild.hashCode()) == 1
         }
@@ -476,14 +477,17 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onNestedScrollAccepted(coordinatorLayout: CoordinatorLayout?, child: V?, directTargetChild: View?, target: View?, nestedScrollAxes: Int) {
+        trace("onNestedScrollAccepted($coordinatorLayout: CoordinatorLayout?, $child: V?, $directTargetChild: View?, $target: View?, $nestedScrollAxes: Int)")
         super.onNestedScrollAccepted(coordinatorLayout, child, directTargetChild, target, nestedScrollAxes)
     }
 
     override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, dx: Int, dy: Int, consumed: IntArray) {
+        trace("onNestedPreScroll($coordinatorLayout: CoordinatorLayout?, $child: V?, $target: View?, $dx: Int, $dy: Int, $consumed: IntArray)")
+
         child?.let { attemptToActivateBottomsheet(child as View) }
 
         val scrollingChild = nestedScrollingChildRef?.get()
-        if (target !== scrollingChild) {
+        if (target != scrollingChild) {
             return
         }
 
@@ -501,35 +505,35 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
 
         if (dy > 0) { // Upward
-            logger.trace("upward")
+            trace("upward")
             if (newTop < minOffset) {
-                logger.trace("newTop < minOffset")
+                trace("newTop < minOffset")
                 consumed[1] = currentTop - minOffset
                 ViewCompat.offsetTopAndBottom(child, -consumed[1])
-                logger.trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -consumed[1])
+                trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -consumed[1])
                 setStateInternal(BottomSheetState.STATE_EXPANDED)
             } else {
-                logger.trace("newTop >= minOffset")
+                trace("newTop >= minOffset")
                 consumed[1] = dy
                 ViewCompat.offsetTopAndBottom(child, -dy)
-                logger.trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -dy)
+                trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -dy)
                 setStateInternal(BottomSheetState.STATE_DRAGGING)
             }
         } else if (dy < 0) { // Downward
-            logger.trace("downward")
+            trace("downward")
             if (!ViewCompat.canScrollVertically(target, -1)) {
-                logger.trace("can scroll vertically")
+                trace("can scroll vertically")
                 if (newTop <= maxOffset || isHideable) {
-                    logger.trace("newTop <= maxOffset || hideable")
+                    trace("newTop <= maxOffset || hideable")
                     consumed[1] = dy
                     ViewCompat.offsetTopAndBottom(child, -dy)
-                    logger.trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -dy)
+                    trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -dy)
                     setStateInternal(BottomSheetState.STATE_DRAGGING)
                 } else {
-                    logger.trace("newTop > maxOffset || hideable")
+                    trace("newTop > maxOffset || hideable")
                     consumed[1] = currentTop - maxOffset
                     ViewCompat.offsetTopAndBottom(child, -consumed[1])
-                    logger.trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -consumed[1])
+                    trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -consumed[1])
                     setStateInternal(BottomSheetState.STATE_COLLAPSED)
                 }
             }
@@ -572,25 +576,25 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         // last movement by percentage of the screen
         if (yVelocity < -150) {
             // snap up
-            logger.trace("velocity %s snapping up", yVelocity)
+            trace("velocity %s snapping up", yVelocity)
             targetState = getNextStableState(lastStableState)
         } else if (yVelocity > 150) {
             //snap down
-            logger.trace("velocity %s snapping down", yVelocity)
+            trace("velocity %s snapping down", yVelocity)
             targetState = getPreviousStableState(lastStableState)
         } else {
             if (percentage > 0.01) {
                 // snap up
-                logger.trace("percentage moved %s snapping up", percentage)
+                trace("percentage moved %s snapping up", percentage)
                 targetState = getNextStableState(lastStableState)
             } else if (percentage < -0.01) {
                 //snap down
-                logger.trace("percentage moved %s snapping down", percentage)
+                trace("percentage moved %s snapping down", percentage)
                 targetState = getPreviousStableState(lastStableState)
             } else {
                 // eventually fall all the way back to the last state if velocity is 0 and the
                 // touch event only moved a small amount
-                logger.trace("snapping to last stable state")
+                trace("snapping to last stable state")
                 targetState = lastStableState
             }
         }
@@ -598,7 +602,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         top = getTopForState(targetState)
         this.lastStableState = targetState
         if (viewDragHelper!!.smoothSlideViewTo(child, child.left, top)) {
-            logger.trace("smoothSlideViewTo %s to %s with state %s", child.javaClass.simpleName, top, targetState)
+            trace("smoothSlideViewTo %s to %s with state %s", child.javaClass.simpleName, top, targetState)
             setStateInternal(BottomSheetState.STATE_SETTLING)
             ViewCompat.postOnAnimation(child, SettleRunnable(child, targetState))
         } else {
@@ -660,23 +664,23 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     internal open fun getTopForState(state: BottomSheetState): Int {
         when (state) {
             BottomSheetState.STATE_HIDDEN -> {
-                logger.debug("STATE_HIDDEN top: %s", parentHeight)
+                debug("STATE_HIDDEN top: %s", parentHeight)
                 return parentHeight
             }
             BottomSheetState.STATE_COLLAPSED -> {
-                logger.debug("STATE_COLLAPSED top: %s", maxOffset)
+                debug("STATE_COLLAPSED top: %s", maxOffset)
                 return maxOffset
             }
             BottomSheetState.STATE_ANCHOR_POINT -> {
-                logger.debug("STATE_ANCHOR_POINT top: %s", anchorPoint)
+                debug("STATE_ANCHOR_POINT top: %s", anchorPoint)
                 return anchorPoint
             }
             BottomSheetState.STATE_EXPANDED -> {
-                logger.debug("STATE_EXPANDED top: %s", minOffset)
+                debug("STATE_EXPANDED top: %s", minOffset)
                 return minOffset
             }
             else -> {
-                logger.debug("UNKNOWN_STATE top: %s", 0)
+                debug("UNKNOWN_STATE top: %s", 0)
                 return 0
             }
         }
@@ -818,7 +822,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
 
         if (viewDragHelper!!.smoothSlideViewTo(child, child.left, top)) {
-            logger.trace("smoothSlideViewTo %s, %s", top, state)
+            trace("smoothSlideViewTo %s, %s", top, state)
             setStateInternal(BottomSheetState.STATE_SETTLING)
             ViewCompat.postOnAnimation(child, SettleRunnable(child, state))
         } else {
@@ -850,6 +854,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
 
         override fun onViewPositionChanged(changedView: View?, left: Int, top: Int, dx: Int, dy: Int) {
+            trace("onViewPositionChanged($changedView: View?, $left: Int, $top: Int, $dx: Int, $dy: Int)")
             dispatchOnSlide(top)
         }
 
@@ -863,17 +868,17 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             val top: Int
             val targetState: BottomSheetState
             if (yvel < 0) { // Moving up
-                logger.trace("view released while moving up")
+                trace("view released while moving up")
                 top = minOffset
                 targetState = BottomSheetState.STATE_EXPANDED
             } else if (isHideable && shouldHide(releasedChild, yvel)) {
-                logger.trace("view released while we should hide the child view")
+                trace("view released while we should hide the child view")
                 top = parentHeight
                 targetState = BottomSheetState.STATE_HIDDEN
             } else if (yvel == 0f) {
-                logger.trace("view released while not moving")
+                trace("view released while not moving")
                 val currentTop = releasedChild.top
-                logger.trace("abs(%s - %s) < abs(%s - %s) = %s", currentTop, minOffset, currentTop, maxOffset, Math.abs(currentTop - minOffset) < Math.abs(currentTop - maxOffset))
+                trace("abs(%s - %s) < abs(%s - %s) = %s", currentTop, minOffset, currentTop, maxOffset, Math.abs(currentTop - minOffset) < Math.abs(currentTop - maxOffset))
                 if (Math.abs(currentTop - minOffset) < Math.abs(currentTop - maxOffset)) {
                     top = minOffset
                     targetState = BottomSheetState.STATE_EXPANDED
@@ -882,16 +887,16 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                     targetState = BottomSheetState.STATE_COLLAPSED
                 }
             } else {
-                logger.trace("view released while moving down")
+                trace("view released while moving down")
                 top = maxOffset
                 targetState = BottomSheetState.STATE_COLLAPSED
             }
             if (viewDragHelper!!.settleCapturedViewAt(releasedChild.left, top)) {
-                logger.trace("settling captured view")
+                trace("settling captured view")
                 setStateInternal(BottomSheetState.STATE_SETTLING)
                 ViewCompat.postOnAnimation(releasedChild, SettleRunnable(releasedChild, targetState))
             } else {
-                logger.trace("setting captured view state without settling")
+                trace("setting captured view state without settling")
                 ConsoleLogger(0).debug("")
                 setStateInternal(targetState)
             }
@@ -920,20 +925,24 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     internal fun dispatchOnSlide(top: Int) {
         val bottomSheet = viewRef!!.get()
+        trace("dispatchOnSlide(%s: Int)", top)
+
         if (bottomSheet != null && slideCallbacks != null) {
             if (top > maxOffset) {
                 for (callback in slideCallbacks!!) {
                     callback.onSlide(bottomSheet, (maxOffset - top).toFloat() / (parentHeight - maxOffset))
+                    trace("callback.onSlide(bottomSheet, %s / %s)", (maxOffset - top).toFloat(), (parentHeight - maxOffset))
                 }
             } else {
                 for (callback in slideCallbacks!!) {
                     callback.onSlide(bottomSheet, (maxOffset - top).toFloat() / (maxOffset - minOffset))
+                    trace("callback.onSlide(bottomSheet, %s / %s)", (maxOffset - top).toFloat(), (maxOffset - minOffset))
                 }
             }
         }
     }
 
-    internal inner class SettleRunnable(private val mView: View, private val targetState: BottomSheetState) : Runnable {
+    protected inner class SettleRunnable(private val mView: View, private val targetState: BottomSheetState) : Runnable {
 
         override fun run() {
             if (viewDragHelper != null && viewDragHelper!!.continueSettling(true)) {
@@ -960,8 +969,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         internal val HIDE_FRICTION = 0.1f
 
-        protected val logger: Logger = ConsoleLogger("ANDROIDISBAD")
-
         /**
          * A utility function to get the [BottomSheetBehavior] associated with the `view`.
 
@@ -970,18 +977,21 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
          * @return The [BottomSheetBehavior] associated with the `view`.
          */
         fun <V : View> from(view: V): AnchorPointBottomSheetBehavior<V>? {
+            trace("fun <V : View> from($view: V): AnchorPointBottomSheetBehavior<V>? ")
+
             val params = view.layoutParams
             if (params !is CoordinatorLayout.LayoutParams) {
-                logger.warn("The view is not a child of CoordinatorLayout")
+                warn("The view is not a child of CoordinatorLayout")
                 return null
             }
 
             val behavior = params.behavior
             if (behavior !is AnchorPointBottomSheetBehavior<*>) {
-                logger.warn("The view is not associated with AnchorPointBottomSheetBehavior")
+                warn("The view is not associated with AnchorPointBottomSheetBehavior")
                 return null
             }
 
+            debug("return $behavior as AnchorPointBottomSheetBehavior<V>?")
             @Suppress("UNCHECKED_CAST")
             return behavior as AnchorPointBottomSheetBehavior<V>?
         }

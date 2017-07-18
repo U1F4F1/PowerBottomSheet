@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
-apply plugin: 'groovyx.android'
+apply plugin: 'de.mobilej.unmock'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android'
-
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 25
@@ -25,6 +25,13 @@ sourceSets {
     main.java.srcDirs += 'src/main/kotlin'
 }
 
+unMock {
+    keep 'android.net.Uri'
+    keep 'android.location.Location'
+    keep 'android.text.TextUtils'
+    keep 'android.util.Log'
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -41,16 +48,42 @@ dependencies {
     annotationProcessor 'com.airbnb.android:epoxy-processor:2.2.0'
     kapt 'com.airbnb.android:epoxy-processor:2.2.0'
 
-    // Test Dependencies
-    testCompile 'org.robospock:robospock:1.0.1'
-    testCompile 'cglib:cglib:3.2.4'
-    testCompile 'org.objenesis:objenesis:2.4'
-
     testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.7.21'
+    testCompile("com.nhaarman:mockito-kotlin:1.4.0") {
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib"
+    }
+
+    compile 'org.amshove.kluent:kluent:1.25'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.u1f4f1.betterbottomsheet'
+            artifactId 'betterbottomsheet'
+            version '1.98'
+            artifact("$buildDir/outputs/aar/bottomsheet-release.aar")
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
+                configurations.compile.allDependencies.each {
+                    if(it.group != null && (it.name != null || "unspecified".equals(it.name)) && it.version != null)
+                    {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
+    }
 }
 
 repositories {
     mavenCentral()
+    maven { url  "http://dl.bintray.com/markusamshove/maven" }
 }
 

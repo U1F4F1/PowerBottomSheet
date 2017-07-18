@@ -19,7 +19,7 @@ class LandscapeAnchorPointBottomSheetBehavior<V : View> : AnchorPointBottomSheet
         attemptToActivateBottomsheet(child!!)
 
         val scrollingChild = nestedScrollingChildRef!!.get()
-        if (target !== scrollingChild) {
+        if (target != scrollingChild) {
             return
         }
 

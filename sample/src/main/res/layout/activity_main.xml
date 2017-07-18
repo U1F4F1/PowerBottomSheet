@@ -29,4 +29,91 @@
         app:layout_behavior="@string/AnchorPointBottomSheetBehavior"
         />
 
+    <!-- the images that expand behind the bottom sheet -->
+    <ImageView
+        android:id="@+id/backdrop_image"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/anchor_point"
+        android:clickable="true"
+        android:fitsSystemWindows="true"
+        app:layout_behavior="@string/BackDropBottomSheetBehavior"
+        android:src="@drawable/doggo"
+        />
+
+    <!-- choose filters fab -->
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/filters_fab"
+        android:layout_marginBottom="@dimen/default_margin_double"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_close_black_24dp"
+        app:layout_behavior="@string/ShrinkBehavior"
+        android:layout_gravity="bottom|start"/>
+
+    <!-- choose layers fab -->
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/layers_fab"
+        android:layout_marginBottom="104dp"
+        android:src="@drawable/ic_close_black_24dp"
+        app:layout_behavior="@string/ShrinkBehavior"
+        android:layout_gravity="bottom|start"/>
+
+    <!-- my location fab -->
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/track_location_fab"
+        android:layout_marginBottom="@dimen/default_margin_double"
+        android:src="@drawable/ic_close_black_24dp"
+        app:layout_behavior="@string/ShrinkBehavior"
+        android:layout_gravity="bottom|end"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_anchor="@id/bottom_sheet"
+        app:layout_behavior="com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.ScrollAwareBehavior"
+        >
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/nav_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_margin="@dimen/fab_margin"
+            android:clickable="true"
+            />
+
+    </FrameLayout>
+
+    <!-- the app bar that shows when the bottom sheet is fully expanded -->
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/merged_appbarlayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_sheet_peek_height"
+        android:background="@android:color/transparent"
+        android:tag="modal-appbar"
+        app:layout_behavior="@string/MergedAppBarLayoutBehavior">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <View
+                android:id="@+id/background"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="bottom"
+                android:background="@android:color/transparent"/>
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/expanded_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:navigationIcon="@drawable/ic_close_black_24dp"
+                app:title="@string/key_binding_default_toolbar_name"/>
+        </FrameLayout>
+    </android.support.design.widget.AppBarLayout>
 </android.support.design.widget.CoordinatorLayout>

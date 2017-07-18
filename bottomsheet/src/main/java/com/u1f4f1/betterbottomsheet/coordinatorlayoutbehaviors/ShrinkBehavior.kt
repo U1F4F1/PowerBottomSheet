@@ -18,37 +18,29 @@ class ShrinkBehavior(context: Context, attrs: AttributeSet) : CoordinatorLayout.
     }
 
     override fun onDependentViewChanged(parent: CoordinatorLayout?, child: FloatingActionButton?, dependency: View?): Boolean {
-        parent?.let { child?.let { dependency?.let {
-            val dependencies = parent.getDependencies(child)
+        parent?.let {
+            child?.let {
+                dependency?.let {
+                    val dependencies = parent.getDependencies(child)
 
-            for (i in 0..dependencies.size - 1) {
-                val view = dependencies[i]
+                    for (i in 0..dependencies.size - 1) {
+                        val view = dependencies[i] as? BottomSheet ?: continue
 
-                // todo handle arbitrary classes here
-                var c = BottomSheet::class.java
-
-                val classes = arrayOf(BottomSheet::class)
-                fun isOneOfTheClasses(o: Any) { classes.contains(o::class) }
-
-                if (view !is BottomSheet) {
-                    continue
-                }
-
-                if (parent.doViewsOverlap(child, view)) {
-                    viewsThatOverlapByClassName.put(view::class.java.simpleName, true)
-                    child.hide()
-                }
-
-                if (atLeastOneViewOverlapsTheFab()) {
-                    child.show()
+                        if (parent.doViewsOverlap(child, view)) {
+                            viewsThatOverlapByClassName.put(view::class.java.simpleName, true)
+                            child.hide()
+                        } else {
+                            child.show()
+                        }
+                    }
                 }
             }
-        }}}
+        }
 
         return false
     }
 
-    private fun atLeastOneViewOverlapsTheFab() : Boolean {
+    private fun atLeastOneViewOverlapsTheFab(): Boolean {
         return viewsThatOverlapByClassName.all { !it.value }
     }
 }
