@@ -42,11 +42,6 @@ import java.lang.ref.WeakReference
 class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> {
 
     /**
-     * Default constructor for instantiating BottomSheetBehaviors.
-     */
-    constructor()
-
-    /**
      * Default constructor for inflating BottomSheetBehaviors from layout.
 
      * @param context The [Context].
@@ -56,13 +51,8 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
         val a = context.obtainStyledAttributes(attrs,
                 R.styleable.BottomSheetBehavior_Layout)
-        val value = a.peekValue(R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight)
-        if (value != null && value.data == AnchorPointBottomSheetBehavior.PEEK_HEIGHT_AUTO) {
-            peekHeight = value.data
-        } else {
-            peekHeight = a.getDimensionPixelSize(
-                    R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, AnchorPointBottomSheetBehavior.PEEK_HEIGHT_AUTO)
-        }
+        peekHeight = a.getDimensionPixelSize(
+                R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, 0)
 
         isHideable = a.getBoolean(R.styleable.BottomSheetBehavior_Layout_behavior_hideable, false)
         skipCollapsed = a.getBoolean(R.styleable.BottomSheetBehavior_Layout_behavior_skipCollapsed, false)
@@ -70,7 +60,6 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
         a.recycle()
 
         val configuration = ViewConfiguration.get(context)
-        maximumVelocity = configuration.scaledMaximumFlingVelocity.toFloat()
 
         gestureDetectorCompat = GestureDetectorCompat(context,
                 GestureDetectors.OnSingleTapUp{ this.handleOnSingleTapUp(it) })
@@ -78,8 +67,8 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
 
     override fun handleOnSingleTapUp(e: MotionEvent): Boolean {
         if (state == BottomSheetState.STATE_COLLAPSED) {
-            if (viewRef!!.get() != null) {
-                (viewRef!!.get() as BottomSheet).isActive = true
+            if (viewRef.get() != null) {
+                (viewRef.get() as BottomSheet).isActive = true
                 bottomSheetIsActive = true
             }
             state = BottomSheetState.STATE_EXPANDED
@@ -89,7 +78,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
         return false
     }
 
-    override fun onLayoutChild(parent: CoordinatorLayout?, child: V?, layoutDirection: Int): Boolean {
+    override fun onLayoutChild(parent: CoordinatorLayout, child: V, layoutDirection: Int): Boolean {
         if (ViewCompat.getFitsSystemWindows(parent) && !ViewCompat.getFitsSystemWindows(child)) {
             ViewCompat.setFitsSystemWindows(child, true)
         }
@@ -98,16 +87,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
         parent!!.onLayoutChild(child, layoutDirection)
         // Offset the bottom sheet
         parentHeight = parent.height
-        val peekHeight: Int
-        if (peekHeightAuto) {
-            if (peekHeightMin == 0) {
-                peekHeightMin = parent.resources.getDimensionPixelSize(
-                        R.dimen.design_bottom_sheet_peek_height_min)
-            }
-            peekHeight = Math.max(peekHeightMin, parentHeight - parent.width * 9 / 16)
-        } else {
-            peekHeight = this.peekHeight
-        }
+        val peekHeight: Int = this.peekHeight
         minOffset = Math.max(0, parentHeight - child.height)
         maxOffset = Math.max(parentHeight - peekHeight, minOffset)
         if (state == BottomSheetState.STATE_EXPANDED) {
@@ -120,14 +100,14 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
             ViewCompat.offsetTopAndBottom(child, savedTop - child.top)
         }
         if (viewDragHelper == null) {
-            viewDragHelper = ViewDragHelper.create(parent, mDragCallback)
+            viewDragHelper = ViewDragHelper.create(parent, dragCallback)
         }
         viewRef = WeakReference(child)
         nestedScrollingChildRef = WeakReference(findScrollingChild(child)!!)
         return true
     }
 
-    override fun onInterceptTouchEvent(parent: CoordinatorLayout?, child: V?, event: MotionEvent?): Boolean {
+    override fun onInterceptTouchEvent(parent: CoordinatorLayout, child: V, event: MotionEvent): Boolean {
         // send this event to the GestureDetector here so we can react to an event without subscribing to updates
         if (event!!.rawY > height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
             gestureDetectorCompat.onTouchEvent(event)
@@ -180,7 +160,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
                 Math.abs(initialY - event.y) > viewDragHelper!!.touchSlop
     }
 
-    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, dx: Int, dy: Int, consumed: IntArray) {
+    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View?, dx: Int, dy: Int, consumed: IntArray) {
         attemptToActivateBottomsheet(child!!)
 
         val scrollingChild = nestedScrollingChildRef?.get()
@@ -217,12 +197,12 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
         nestedScrolled = true
     }
 
-    override fun onStopNestedScroll(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?) {
-        if (child!!.top == minOffset) {
+    override fun onStopNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View) {
+        if (child.top == minOffset) {
             setStateInternal(BottomSheetState.STATE_EXPANDED)
             return
         }
-        if (target !== nestedScrollingChildRef?.get() || !nestedScrolled) {
+        if (target !== nestedScrollingChildRef.get() || !nestedScrolled) {
             return
         }
         val top: Int
@@ -230,7 +210,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
         if (lastNestedScrollDy > 0) {
             top = minOffset
             targetState = BottomSheetState.STATE_EXPANDED
-        } else if (isHideable && shouldHide(child, yVelocity)) {
+        } else if (isHideable && shouldHide(child, getYvelocity())) {
             top = parentHeight
             targetState = BottomSheetState.STATE_HIDDEN
         } else if (lastNestedScrollDy == 0) {

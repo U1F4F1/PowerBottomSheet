@@ -9,10 +9,7 @@ import android.view.View
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.betterbottomsheet.bottomsheet.SavedState
 
-class TabletAnchorPointBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> {
-    constructor() : super()
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+class TabletAnchorPointBottomSheetBehavior<V : View>(context: Context, attrs: AttributeSet?) : AnchorPointBottomSheetBehavior<V>(context, attrs) {
 
     override fun onRestoreInstanceState(parent: CoordinatorLayout?, child: V?, state: Parcelable?) {
         val ss = state as SavedState
@@ -27,7 +24,7 @@ class TabletAnchorPointBottomSheetBehavior<V : View> : AnchorPointBottomSheetBeh
         lastStableState = this.state
     }
 
-    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, dx: Int, dy: Int, consumed: IntArray) {
+    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View?, dx: Int, dy: Int, consumed: IntArray) {
         attemptToActivateBottomsheet(child!!)
 
         val scrollingChild = nestedScrollingChildRef!!.get()
@@ -122,18 +119,6 @@ class TabletAnchorPointBottomSheetBehavior<V : View> : AnchorPointBottomSheetBeh
             else -> return 0
         }
     }
-
-    override var state: BottomSheetState = BottomSheetState.STATE_ANCHOR_POINT
-        get() = super.state
-        set(value) {
-            // we never collapse this sheet
-            if (value == BottomSheetState.STATE_COLLAPSED) {
-                field = BottomSheetState.STATE_ANCHOR_POINT
-                lastStableState = BottomSheetState.STATE_ANCHOR_POINT
-            }
-
-            super.state = state
-        }
 
     override fun setStateInternal(state: BottomSheetState) {
         var s = state

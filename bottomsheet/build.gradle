@@ -54,7 +54,7 @@ dependencies {
         exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib"
     }
 
-    compile 'org.amshove.kluent:kluent:1.25'
+    testCompile 'org.amshove.kluent:kluent:1.25'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }
 
@@ -63,7 +63,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.u1f4f1.betterbottomsheet'
             artifactId 'betterbottomsheet'
-            version '1.98'
+            version '1.99'
             artifact("$buildDir/outputs/aar/bottomsheet-release.aar")
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')

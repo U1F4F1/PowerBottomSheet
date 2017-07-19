@@ -9,13 +9,9 @@ import android.view.View
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.betterbottomsheet.trace
 
-class LandscapeAnchorPointBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> {
+class LandscapeAnchorPointBottomSheetBehavior<V : View>(context: Context, attrs: AttributeSet?) : AnchorPointBottomSheetBehavior<V>(context, attrs) {
 
-    constructor() : super() {}
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
-
-    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, dx: Int, dy: Int, consumed: IntArray) {
+    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View?, dx: Int, dy: Int, consumed: IntArray) {
         attemptToActivateBottomsheet(child!!)
 
         val scrollingChild = nestedScrollingChildRef!!.get()
@@ -111,18 +107,6 @@ class LandscapeAnchorPointBottomSheetBehavior<V : View> : AnchorPointBottomSheet
     override fun getTopForState(state: BottomSheetState): Int {
         return 0
     }
-
-    override var state: BottomSheetState = BottomSheetState.STATE_HIDDEN
-        get() = super.state
-        set(value) {
-            // we never collapse this sheet
-            if (value == BottomSheetState.STATE_COLLAPSED) {
-                field = BottomSheetState.STATE_HIDDEN
-                lastStableState = BottomSheetState.STATE_HIDDEN
-            }
-
-            super.state = state
-        }
 
     override fun setStateInternal(state: BottomSheetState) {
         // we never collapse this sheet
