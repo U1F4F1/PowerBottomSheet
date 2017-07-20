@@ -1,223 +1,68 @@
 package com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
-import android.app.Activity
 import android.content.Context
-import android.os.Build
-import android.os.Parcel
-import android.os.Parcelable
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
-import android.support.v4.content.ContextCompat
-import android.support.v4.widget.NestedScrollView
 import android.util.AttributeSet
 import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
 import com.u1f4f1.betterbottomsheet.R
 
 /**
- * [CoordinatorLayout.Behavior] that handles animating up an [AppBarLayout] if it is attached to the
- * [AppBarLayout] itself, or if it's attached to a parent [ViewGroup]
+ * Copyright (C) 2017 Tetsuya Masuda
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-class ScrollingAppBarLayoutBehavior(private val context: Context, attrs: AttributeSet) : AppBarLayout.ScrollingViewBehavior(context, attrs) {
+class ScrollingAppBarLayoutBehavior(context: Context, attrs: AttributeSet?) : AppBarLayout.ScrollingViewBehavior(
+        context, attrs) {
 
-    private var isInitialized = false
-    private var isVisible = true
-    /**
-     * To avoid using multiple "peekheight=" in XML and looking flexibility allowing [AnchorPointBottomSheetBehavior.peekHeight]
-     * get changed dynamically we get the [NestedScrollView] that has
-     * "app:layout_behavior=" [AnchorPointBottomSheetBehavior] inside the [CoordinatorLayout]
-     */
-    private var anchorPointBottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null
+    var peekHeight = 300
+    var anchorPointY = 600
+    var currentChildY = 0
+    var anchorPoint = 0
 
-    private var appBarValueAnimator: ValueAnimator? = null
+    init {
+        attrs?.let {
+            var a = context.obtainStyledAttributes(attrs, android.support.design.R.styleable.BottomSheetBehavior_Layout)
 
-    override fun layoutDependsOn(parent: CoordinatorLayout?, child: View?, dependency: View?): Boolean {
-        if (dependency is NestedScrollView) {
-            if (AnchorPointBottomSheetBehavior.from<View>(dependency) != null) {
-                return true
-            }
+            peekHeight = a.getDimensionPixelSize(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, 0)
+
+            a = context.obtainStyledAttributes(attrs, R.styleable.AnchorPointBottomSheetBehavior)
+            anchorPoint = a.getDimension(R.styleable.AnchorPointBottomSheetBehavior_anchorPoint, AnchorPointBottomSheetBehavior.ANCHOR_POINT_AUTO.toFloat()).toInt()
+            a.recycle()
         }
-        return false
     }
 
-    override fun onDependentViewChanged(parent: CoordinatorLayout, child: View, dependency: View): Boolean {
-        if (!isInitialized && !parent.isInEditMode) {
-            return init(parent, child, dependency)
-        }
+    override fun layoutDependsOn(parent: CoordinatorLayout, child: View, dependency: View): Boolean
+            = AnchorPointBottomSheetBehavior.from(dependency) != null
 
-        anchorPointBottomSheetBehavior?.let {
-            getBottomSheetBehavior(parent)
-        }
-
-        child.getChildAppBarLayout()?.let {
-            setAppBarVisible(it, dependency.y >= dependency.height - anchorPointBottomSheetBehavior!!.peekHeight)
-        }
-
+    override fun onLayoutChild(parent: CoordinatorLayout, child: View,
+                               layoutDirection: Int): Boolean {
+        parent.onLayoutChild(child, layoutDirection)
+        anchorPointY = parent.height - anchorPoint
         return true
     }
 
-    override fun onSaveInstanceState(parent: CoordinatorLayout?, child: View?): Parcelable {
-        return SavedState(super.onSaveInstanceState(parent, child), isVisible)
-    }
-
-    override fun onRestoreInstanceState(parent: CoordinatorLayout?, child: View?, state: Parcelable?) {
-        if (state !is SavedState) return
-
-        val savedState = state
-        super.onRestoreInstanceState(parent, child, savedState.superState)
-        this.isVisible = savedState.isVisible
-    }
-
-    private fun init(parent: CoordinatorLayout, child: View, dependency: View): Boolean {
-        /**
-         * First we need to know if dependency view is upper or lower compared with
-         * [AnchorPointBottomSheetBehavior] Y position to know if need to show the AppBar at beginning.
-         */
-        getBottomSheetBehavior(parent)
-        anchorPointBottomSheetBehavior?.let { getBottomSheetBehavior(parent) }
-        val mCollapsedY = dependency.height - anchorPointBottomSheetBehavior!!.peekHeight
-        isVisible = dependency.y >= mCollapsedY
-
-        setStatusBarBackgroundVisible(isVisible)
-        if (!isVisible) child.y = (child.y.toInt() - child.height - statusBarHeight).toFloat()
-        isInitialized = true
-
-        // We only need to move the view if we aren't already visible
-        return !isVisible
-    }
-
-    fun setAppBarVisible(appBarLayout: AppBarLayout, visible: Boolean) {
-
-        if (visible == isVisible) return
-
-        if (appBarValueAnimator == null || !appBarValueAnimator!!.isRunning) {
-
-            appBarValueAnimator = ValueAnimator.ofFloat(
-                    appBarLayout.y,
-                    if (visible) appBarLayout.y + appBarLayout.height + statusBarHeight
-                    else appBarLayout.y - appBarLayout.height - statusBarHeight)
-
-            appBarValueAnimator!!.duration = context.resources.getInteger(android.R.integer.config_shortAnimTime).toLong()
-            appBarValueAnimator!!.addUpdateListener { animation -> appBarLayout.y = animation.animatedValue as Float }
-            appBarValueAnimator!!.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator) {
-                    super.onAnimationStart(animation)
-                    when { visible -> setStatusBarBackgroundVisible(true) }
-                }
-
-                override fun onAnimationEnd(animation: Animator) {
-                    when { !visible -> setStatusBarBackgroundVisible(false) }
-                    isVisible = visible
-                    super.onAnimationEnd(animation)
-                }
-            })
-            appBarValueAnimator!!.start()
+    override fun onDependentViewChanged(parent: CoordinatorLayout, child: View,
+                                        dependency: View): Boolean {
+        super.onDependentViewChanged(parent, child, dependency)
+        val rate = (parent.height - dependency.y - peekHeight) / (anchorPoint)
+        currentChildY = -((child.height + child.paddingTop + child.paddingBottom + child.top + child.bottom) * (rate)).toInt()
+        if (currentChildY <= 0) {
+            child.y = currentChildY.toFloat()
+        } else {
+            child.y = 0f
+            currentChildY = 0
         }
-    }
-
-    private val statusBarHeight: Int
-        get() {
-            var result: Int = 0
-            val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
-            if (resourceId > 0) {
-                result = context.resources.getDimensionPixelSize(resourceId)
-            }
-            return result
-        }
-
-    private fun setStatusBarBackgroundVisible(visible: Boolean) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (visible) {
-                val window = (context as Activity).window
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-                window.statusBarColor = ContextCompat.getColor(context, R.color.colorPrimaryDark)
-            } else {
-                val window = (context as Activity).window
-                window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                window.statusBarColor = ContextCompat.getColor(context, android.R.color.transparent)
-            }
-        }
-    }
-
-    /**
-     * Look into the CoordiantorLayout for the [AnchorPointBottomSheetBehavior]
-
-     * @param coordinatorLayout with app:layout_behavior= [AnchorPointBottomSheetBehavior]
-     */
-    private fun getBottomSheetBehavior(coordinatorLayout: CoordinatorLayout) {
-        (0..coordinatorLayout.childCount - 1)
-                .map { coordinatorLayout.getChildAt(it) }
-                .filterIsInstance<NestedScrollView>()
-                .forEach {
-                    try {
-                        anchorPointBottomSheetBehavior = AnchorPointBottomSheetBehavior.from<View>(it)
-                    } catch (e: IllegalArgumentException) { }
-                }
-    }
-
-    fun View.getChildAppBarLayout(): AppBarLayout? {
-        if (this !is ViewGroup) return null
-
-        (0..this.childCount - 1).forEach { i ->
-            val child = this.getChildAt(i)
-
-            if (child is AppBarLayout) {
-                return child
-            }
-
-            if (child is ViewGroup) {
-                return child.getChildAppBarLayout()
-            }
-        }
-
-        return null
-    }
-
-    protected class SavedState : View.BaseSavedState {
-
-        internal val isVisible: Boolean
-
-        constructor(source: Parcel) : super(source) {
-            isVisible = source.readByte().toInt() != 0
-        }
-
-        constructor(superState: Parcelable, visible: Boolean) : super(superState) {
-            this.isVisible = visible
-        }
-
-        override fun writeToParcel(out: Parcel, flags: Int) {
-            super.writeToParcel(out, flags)
-            out.writeByte((if (isVisible) 1 else 0).toByte())
-        }
-
-        companion object {
-
-            val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState> {
-                override fun createFromParcel(source: Parcel): SavedState {
-                    return SavedState(source)
-                }
-
-                override fun newArray(size: Int): Array<SavedState?> {
-                    return arrayOfNulls(size)
-                }
-            }
-        }
-    }
-
-    companion object {
-
-        fun <V : View> from(view: V): ScrollingAppBarLayoutBehavior {
-            val params = view.layoutParams as? CoordinatorLayout.LayoutParams
-                    ?: throw IllegalArgumentException("The view is not a child of CoordinatorLayout")
-            val behavior = params.behavior as? ScrollingAppBarLayoutBehavior
-                    ?: throw IllegalArgumentException("The view is not associated with ScrollingAppBarLayoutBehavior")
-            return behavior
-        }
+        return true
     }
 }

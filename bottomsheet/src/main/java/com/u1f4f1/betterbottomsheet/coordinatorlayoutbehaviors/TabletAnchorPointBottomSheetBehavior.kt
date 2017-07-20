@@ -25,9 +25,9 @@ class TabletAnchorPointBottomSheetBehavior<V : View>(context: Context, attrs: At
     }
 
     override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View?, dx: Int, dy: Int, consumed: IntArray) {
-        attemptToActivateBottomsheet(child!!)
+        attemptToActivateBottomsheet(child)
 
-        val scrollingChild = nestedScrollingChildRef!!.get()
+        val scrollingChild = nestedScrollingChildRef.get()
         if (target !== scrollingChild) {
             return
         }
