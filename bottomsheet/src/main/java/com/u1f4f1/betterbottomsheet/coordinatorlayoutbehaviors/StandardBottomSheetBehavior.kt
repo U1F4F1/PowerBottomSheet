@@ -68,7 +68,6 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
     override fun handleOnSingleTapUp(e: MotionEvent): Boolean {
         if (state == BottomSheetState.STATE_COLLAPSED) {
             if (viewRef.get() != null) {
-                (viewRef.get() as BottomSheet).isActive = true
                 bottomSheetIsActive = true
             }
             state = BottomSheetState.STATE_EXPANDED

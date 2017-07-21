@@ -42,30 +42,17 @@ abstract class BottomSheet : NestedScrollView {
 
     private val postOnStableStateRunnables = SparseArray<MutableList<Runnable>>()
 
-    private var activatedListener: OnSheetActivatedListener? = null
     private var bottomSheetAdapter: BottomSheetAdapter? = null
 
     private var stateCallbacks: MutableSet<AnchorPointBottomSheetBehavior.BottomSheetStateCallback> = mutableSetOf()
     private var slideCallbacks: MutableSet<AnchorPointBottomSheetBehavior.BottomSheetSlideCallback> = mutableSetOf()
 
-    open var isActive: Boolean = false
-        set(isActive) {
-            if (isActive == field) return
-
-            field = isActive
-            activatedListener?.isActivated(isActive)
-        }
-
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    interface OnSheetActivatedListener {
-        fun isActivated(isActive: Boolean)
-    }
-
-    fun setActivatedListener(activatedListener: OnSheetActivatedListener) {
-        this.activatedListener = activatedListener
+    fun setActivatedListener(activatedListener: AnchorPointBottomSheetBehavior.OnSheetActivatedListener) {
+        bottomSheetBehavior?.activeCallback = activatedListener
     }
 
     open fun removeAdapter() {
@@ -128,12 +115,10 @@ abstract class BottomSheet : NestedScrollView {
 
                 @Suppress("NON_EXHAUSTIVE_WHEN")
                 when (newState) {
-                    BottomSheetState.STATE_ANCHOR_POINT -> reset()
+                    BottomSheetState.STATE_ANCHOR_POINT,
                     BottomSheetState.STATE_COLLAPSED -> {
-                        isActive = false
                         reset()
                     }
-                    else -> isActive = true
                 }
             }
         }

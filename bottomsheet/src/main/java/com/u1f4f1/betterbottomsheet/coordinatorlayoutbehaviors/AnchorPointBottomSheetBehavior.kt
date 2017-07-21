@@ -80,12 +80,26 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         fun onSlide(bottomSheet: View, slideOffset: Float)
     }
 
+    /**
+     * Callback for monitoring if the bottomsheet is active or not. This is the same concept as the
+     * Google maps app, where we might need to change the background color of the top item in the bottomsheet
+     * once the user starts dragging it past the [BottomSheetState.STATE_COLLAPSED] state
+     */
+    interface OnSheetActivatedListener {
+        fun isActivated(isActive: Boolean)
+    }
+
     protected open var lastStableState = BottomSheetState.STATE_HIDDEN
     protected val stateCallbacks: MutableList<BottomSheetStateCallback> = CopyOnWriteArrayList()
     protected val slideCallbacks: MutableList<BottomSheetSlideCallback> = CopyOnWriteArrayList()
+    var activeCallback: OnSheetActivatedListener? = null
 
     protected var shouldScrollWithView: MutableMap<Int, Int> = ConcurrentHashMap()
     protected var bottomSheetIsActive: Boolean = false
+        set(value) {
+            field = value
+            activeCallback?.isActivated(value)
+        }
 
     protected lateinit var gestureDetectorCompat: GestureDetectorCompat
 
@@ -93,7 +107,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     var velocityTracker: VelocityTracker? = null
     var state = BottomSheetState.STATE_HIDDEN
-
 
     var peekHeight: Int = 0
     var anchorPosition: Int = 0
@@ -139,10 +152,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     protected open fun handleOnSingleTapUp(e: MotionEvent): Boolean {
         if (state == BottomSheetState.STATE_COLLAPSED) {
-            if (viewRef.get() != null) {
-                (viewRef.get() as BottomSheet).isActive = true
-                bottomSheetIsActive = true
-            }
+            bottomSheetIsActive = true
             state = BottomSheetState.STATE_ANCHOR_POINT
             return true
         }
@@ -548,13 +558,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         if (shouldActivate == bottomSheetIsActive) return
 
-        if (shouldActivate) {
-            bottomSheet.isActive = true
-            bottomSheetIsActive = true
-        } else {
-            bottomSheet.isActive = false
-            bottomSheetIsActive = false
-        }
+        bottomSheetIsActive = shouldActivate
     }
 
     protected fun getYvelocity(): Float {
@@ -590,6 +594,26 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     val isStable: Boolean
         get() = isStateStable(state)
+
+    fun updateState(value: BottomSheetState) {
+        if (this.state == value) {
+            return
+        }
+
+        this.state = value
+
+        val sheet = viewRef.get()
+        val parent = sheet?.parent
+        parent?.let {
+            if (it.isLayoutRequested && ViewCompat.isAttachedToWindow(sheet)) {
+                sheet.post {
+                    startSettlingAnimation(sheet, state)
+                }
+            } else {
+                startSettlingAnimation(sheet, state)
+            }
+        }
+    }
 
     internal open fun setStateInternal(state: BottomSheetState) {
         if (this.state == state) {
@@ -835,7 +859,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
          * @return The [BottomSheetBehavior] associated with the `view`.
          */
         fun <V : View> from(view: V): AnchorPointBottomSheetBehavior<V>? {
-            trace("fun <V : View> from($view: V): AnchorPointBottomSheetBehavior<V>? ")
 
             val params = view.layoutParams
             if (params !is CoordinatorLayout.LayoutParams) {
@@ -849,7 +872,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 return null
             }
 
-            debug("return $behavior as AnchorPointBottomSheetBehavior<V>?")
             @Suppress("UNCHECKED_CAST")
             return behavior as AnchorPointBottomSheetBehavior<V>?
         }

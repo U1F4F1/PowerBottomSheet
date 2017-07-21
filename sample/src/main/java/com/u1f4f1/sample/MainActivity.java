@@ -3,6 +3,7 @@ package com.u1f4f1.sample;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 import com.airbnb.epoxy.EpoxyModel;
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheet;
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
         bottomSheetBehavior = AnchorPointBottomSheetBehavior.Companion.from(bottomSheet);
 
-        bottomSheet.setActivatedListener(new BottomSheet.OnSheetActivatedListener() {
+        bottomSheet.setActivatedListener(new AnchorPointBottomSheetBehavior.OnSheetActivatedListener() {
             @Override
             public void isActivated(boolean isActive) {
                 if (isActive) {

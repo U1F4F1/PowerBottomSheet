@@ -3,11 +3,15 @@ package com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors
 import android.content.Context
 import android.os.Parcelable
 import android.support.design.widget.AppBarLayout
+import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.CoordinatorLayout
 import android.support.v7.widget.Toolbar
 import android.util.AttributeSet
 import android.view.View
 import com.u1f4f1.betterbottomsheet.R
+import com.u1f4f1.betterbottomsheet.debug
+import com.u1f4f1.betterbottomsheet.trace
+import com.u1f4f1.betterbottomsheet.warn
 
 /**
  * Copyright (C) 2017 Tetsuya Masuda
@@ -108,5 +112,33 @@ class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet
 
     override fun onRestoreInstanceState(parent: CoordinatorLayout?, child: V, state: Parcelable?) {
         // no op
+    }
+
+    companion object {
+
+        /**
+         * A utility function to get the [BottomSheetBehavior] associated with the `view`.
+
+         * @param view The [View] with [BottomSheetBehavior].
+         * *
+         * @return The [BottomSheetBehavior] associated with the `view`.
+         */
+        fun <V : View> from(view: V): MergedAppBarLayoutBehavior<V>? {
+
+            val params = view.layoutParams
+            if (params !is CoordinatorLayout.LayoutParams) {
+                warn("The view is not a child of CoordinatorLayout")
+                return null
+            }
+
+            val behavior = params.behavior
+            if (behavior !is MergedAppBarLayoutBehavior<*>) {
+                warn("The view is not associated with MergedAppBarLayoutBehavior")
+                return null
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            return behavior as MergedAppBarLayoutBehavior<V>?
+        }
     }
 }
