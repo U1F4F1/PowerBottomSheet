@@ -8,6 +8,7 @@ import android.view.View
 import com.airbnb.epoxy.EpoxyAdapter
 import com.airbnb.epoxy.EpoxyModel
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
+import com.u1f4f1.betterbottomsheet.trace
 import java.util.concurrent.LinkedBlockingDeque
 
 abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*>) : EpoxyAdapter() {
@@ -63,6 +64,7 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView?) {
         super.onAttachedToRecyclerView(recyclerView)
 
+        trace("BottomSheetAdapter.onAttachedToRecyclerView(recyclerView: RecyclerView?)")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             recyclerViewTransitionRunnable = Runnable { TransitionManager.beginDelayedTransition(recyclerView) }
         } else {

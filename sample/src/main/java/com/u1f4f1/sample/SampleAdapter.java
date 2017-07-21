@@ -1,7 +1,5 @@
 package com.u1f4f1.sample;
 
-import android.util.Log;
-
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetAdapter;
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior;
 

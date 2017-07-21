@@ -48,10 +48,11 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.button)
     void onClick() {
         sampleAdapter = new SampleAdapter(bottomSheetBehavior);
-        sampleAdapter.addFakeViews();
 
         bottomSheet.setupRecyclerview(sampleAdapter);
         bottomSheetBehavior.setState(BottomSheetState.STATE_COLLAPSED);
+
+        sampleAdapter.addFakeViews();
     }
 
     @Override
