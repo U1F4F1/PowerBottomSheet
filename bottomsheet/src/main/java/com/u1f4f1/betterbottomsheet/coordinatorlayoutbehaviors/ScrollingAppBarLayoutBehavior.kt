@@ -45,24 +45,27 @@ class ScrollingAppBarLayoutBehavior(context: Context, attrs: AttributeSet?) : Ap
     override fun layoutDependsOn(parent: CoordinatorLayout, child: View, dependency: View): Boolean
             = AnchorPointBottomSheetBehavior.from(dependency) != null
 
-    override fun onLayoutChild(parent: CoordinatorLayout, child: View,
-                               layoutDirection: Int): Boolean {
+    override fun onLayoutChild(parent: CoordinatorLayout, child: View, layoutDirection: Int): Boolean {
         parent.onLayoutChild(child, layoutDirection)
+
         anchorPointY = parent.height - anchorPoint
+
         return true
     }
 
-    override fun onDependentViewChanged(parent: CoordinatorLayout, child: View,
-                                        dependency: View): Boolean {
+    override fun onDependentViewChanged(parent: CoordinatorLayout, child: View, dependency: View): Boolean {
         super.onDependentViewChanged(parent, child, dependency)
+
         val rate = (parent.height - dependency.y - peekHeight) / (anchorPoint)
         currentChildY = -((child.height + child.paddingTop + child.paddingBottom + child.top + child.bottom) * (rate)).toInt()
+
         if (currentChildY <= 0) {
             child.y = currentChildY.toFloat()
         } else {
             child.y = 0f
             currentChildY = 0
         }
+
         return true
     }
 }

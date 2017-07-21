@@ -38,17 +38,6 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
         super.notifyModelChanged(model)
     }
 
-    override fun notifyModelChanged(model: EpoxyModel<*>?, payload: Any?) {
-        if (!behavior.isStable) {
-            updates.add(Runnable {
-                super.notifyModelChanged(model, payload)
-            })
-            return
-        }
-
-        super.notifyModelChanged(model, payload)
-    }
-
     override fun notifyModelsChanged() {
         if (!behavior.isStable) {
             updates.add(Runnable {
