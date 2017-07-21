@@ -26,7 +26,6 @@ import android.support.design.widget.CoordinatorLayout
 import android.support.v4.view.*
 import android.support.v4.widget.ViewDragHelper
 import android.util.AttributeSet
-import android.util.SparseIntArray
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.View
@@ -37,6 +36,7 @@ import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheet
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.betterbottomsheet.bottomsheet.SavedState
 import java.lang.ref.WeakReference
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
@@ -81,10 +81,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     protected open var lastStableState = BottomSheetState.STATE_HIDDEN
-    protected var stateCallbacks: MutableList<BottomSheetStateCallback>? = CopyOnWriteArrayList()
-    protected var slideCallbacks: MutableList<BottomSheetSlideCallback>? = CopyOnWriteArrayList()
+    protected val stateCallbacks: MutableList<BottomSheetStateCallback> = CopyOnWriteArrayList()
+    protected val slideCallbacks: MutableList<BottomSheetSlideCallback> = CopyOnWriteArrayList()
 
-    protected var shouldScrollWithView = SparseIntArray()
+    protected var shouldScrollWithView: MutableMap<Int, Int> = ConcurrentHashMap()
     protected var bottomSheetIsActive: Boolean = false
 
     protected lateinit var gestureDetectorCompat: GestureDetectorCompat
@@ -306,10 +306,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         return !ignoreEvents
     }
 
-    override fun onStartNestedScroll(coordinatorLayout: CoordinatorLayout?, child: V?, directTargetChild: View?, target: View?, nestedScrollAxes: Int): Boolean {
-        trace("onStartNestedScroll($coordinatorLayout: CoordinatorLayout?, $child: V?, $directTargetChild: View?, $target: View?, $nestedScrollAxes: Int)")
-        if (shouldScrollWithView.get(child!!.hashCode() + directTargetChild!!.hashCode(), -1) != -1) {
-            return shouldScrollWithView.get(child.hashCode() + directTargetChild.hashCode()) == 1
+    override fun onStartNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, directTargetChild: View, target: View, nestedScrollAxes: Int): Boolean {
+        trace("onStartNestedScroll($coordinatorLayout: CoordinatorLayout, $child: V, $directTargetChild: View, $target: View, $nestedScrollAxes: Int)")
+        if (shouldScrollWithView.getOrDefault(child.hashCode() + directTargetChild.hashCode(), -1) != -1) {
+            return shouldScrollWithView[child.hashCode() + directTargetChild.hashCode()] == 1
         }
 
         lastNestedScrollDy = 0
@@ -576,7 +576,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * @param callback The callback to notify when bottom sheet events occur.
      */
     fun addBottomSheetStateCallback(callback: BottomSheetStateCallback) {
-        this.stateCallbacks!!.add(callback)
+        this.stateCallbacks.add(callback)
     }
 
     /**
@@ -585,7 +585,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * @param callback The callback to notify when bottom sheet events occur.
      */
     fun addBottomSheetSlideCallback(callback: BottomSheetSlideCallback) {
-        this.slideCallbacks!!.add(callback)
+        this.slideCallbacks.add(callback)
     }
 
     val isStable: Boolean
@@ -601,9 +601,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         // only send stable states, post it to the views message queue
         if (isStateStable(state)) {
             val bottomSheet = viewRef.get()
-            if (bottomSheet != null && stateCallbacks != null) {
+            if (bottomSheet != null) {
                 (bottomSheet.parent as View).post {
-                    for (callback in stateCallbacks!!) {
+                    for (callback in stateCallbacks) {
                         callback.onStateChanged(bottomSheet, state)
                     }
                 }
@@ -783,7 +783,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
 
         override fun getViewVerticalDragRange(child: View?): Int = if (isHideable) {
-            parentHeight - minOffset;
+            parentHeight - minOffset
         } else {
             maxOffset - minOffset
         }
@@ -793,14 +793,14 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         val bottomSheet = viewRef.get()
         trace("dispatchOnSlide(%s: Int)", top)
 
-        if (bottomSheet != null && slideCallbacks != null) {
+        if (bottomSheet != null) {
             if (top > maxOffset) {
-                for (callback in slideCallbacks!!) {
+                for (callback in slideCallbacks) {
                     callback.onSlide(bottomSheet, (maxOffset - top).toFloat() / (parentHeight - maxOffset))
                     trace("callback.onSlide(bottomSheet, %s / %s)", (maxOffset - top).toFloat(), (parentHeight - maxOffset))
                 }
             } else {
-                for (callback in slideCallbacks!!) {
+                for (callback in slideCallbacks) {
                     callback.onSlide(bottomSheet, (maxOffset - top).toFloat() / (maxOffset - minOffset))
                     trace("callback.onSlide(bottomSheet, %s / %s)", (maxOffset - top).toFloat(), (maxOffset - minOffset))
                 }

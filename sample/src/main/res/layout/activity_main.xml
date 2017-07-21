@@ -90,30 +90,17 @@
 
     <!-- the app bar that shows when the bottom sheet is fully expanded -->
     <android.support.design.widget.AppBarLayout
-        android:id="@+id/merged_appbarlayout"
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_sheet_peek_height"
-        android:background="@android:color/transparent"
-        android:tag="modal-appbar"
+        android:layout_height="?attr/actionBarSize"
+        android:theme="@style/AppTheme.AppBarOverlay"
         app:layout_behavior="@string/MergedAppBarLayoutBehavior">
 
-        <FrameLayout
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/merged_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_close_black_24dp"/>
 
-            <View
-                android:id="@+id/background"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_gravity="bottom"
-                android:background="@android:color/transparent"/>
-
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/expanded_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:navigationIcon="@drawable/ic_close_black_24dp"
-                app:title="@string/key_binding_default_toolbar_name"/>
-        </FrameLayout>
     </android.support.design.widget.AppBarLayout>
 </android.support.design.widget.CoordinatorLayout>

@@ -62,7 +62,7 @@ class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet
             a.recycle()
 
             val scrollInBehaviorParam = context.obtainStyledAttributes(it, R.styleable.MergedAppBarLayoutBehavior)
-            title = scrollInBehaviorParam?.getString(R.styleable.MergedAppBarLayoutBehavior_title)!!
+            title = scrollInBehaviorParam?.getString(R.styleable.MergedAppBarLayoutBehavior_title) ?: "Title"
             scrollInBehaviorParam.recycle()
         }
     }
