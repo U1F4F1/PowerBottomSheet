@@ -67,7 +67,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
 
     override fun handleOnSingleTapUp(e: MotionEvent): Boolean {
         if (state == BottomSheetState.STATE_COLLAPSED) {
-            if (viewRef.get() != null) {
+            if (viewRef?.get() != null) {
                 bottomSheetIsActive = true
             }
             state = BottomSheetState.STATE_EXPANDED
@@ -99,7 +99,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
             ViewCompat.offsetTopAndBottom(child, savedTop - child.top)
         }
         if (viewDragHelper == null) {
-            viewDragHelper = ViewDragHelper.create(parent, dragCallback)
+            viewDragHelper = ViewDragHelper.create(parent, mDragCallback)
         }
         viewRef = WeakReference(child)
         nestedScrollingChildRef = WeakReference(findScrollingChild(child)!!)
@@ -201,7 +201,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
             setStateInternal(BottomSheetState.STATE_EXPANDED)
             return
         }
-        if (target !== nestedScrollingChildRef.get() || !nestedScrolled) {
+        if (target !== nestedScrollingChildRef!!.get() || !nestedScrolled) {
             return
         }
         val top: Int
@@ -209,7 +209,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
         if (lastNestedScrollDy > 0) {
             top = minOffset
             targetState = BottomSheetState.STATE_EXPANDED
-        } else if (isHideable && shouldHide(child, getYvelocity())) {
+        } else if (isHideable && shouldHide(child, yVelocity)) {
             top = parentHeight
             targetState = BottomSheetState.STATE_HIDDEN
         } else if (lastNestedScrollDy == 0) {

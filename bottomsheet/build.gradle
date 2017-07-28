@@ -60,7 +60,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.u1f4f1.betterbottomsheet'
             artifactId 'betterbottomsheet'
-            version '1.99999999'
+            version '1.999999999999999'
             artifact("$buildDir/outputs/aar/bottomsheet-release.aar")
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
