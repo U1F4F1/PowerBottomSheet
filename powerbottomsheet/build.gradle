@@ -61,7 +61,7 @@ publishing {
             groupId 'com.u1f4f1.powerbetterbottomsheet'
             artifactId 'powerbetterbottomsheet'
             version '3.0'
-            artifact("$buildDir/outputs/aar/bottomsheet-release.aar")
+            artifact("$buildDir/outputs/aar/powerbottomsheet-release.aar")
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
                 //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
