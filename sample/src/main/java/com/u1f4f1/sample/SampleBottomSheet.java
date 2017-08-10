@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
-import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheet;
+import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheet;
 
 
 public class SampleBottomSheet extends BottomSheet {

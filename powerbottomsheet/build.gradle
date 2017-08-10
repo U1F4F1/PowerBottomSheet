@@ -1,0 +1,86 @@
+apply plugin: 'com.android.library'
+apply plugin: 'de.mobilej.unmock'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 25
+        versionCode 1
+        versionName "0.6"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+}
+
+unMock {
+    keep 'android.util.Log'
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:design:25.3.1'
+
+    compile 'com.github.kylealanr:GestureDetectors:1.1'
+    compile 'com.github.InkApplications:android-logger:4.1.0'
+
+    compile 'com.airbnb.android:epoxy:2.2.0'
+    annotationProcessor 'com.airbnb.android:epoxy-processor:2.2.0'
+    kapt 'com.airbnb.android:epoxy-processor:2.2.0'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.7.21'
+    testCompile("com.nhaarman:mockito-kotlin:1.4.0") {
+        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib"
+    }
+
+    testCompile 'org.amshove.kluent:kluent:1.25'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.u1f4f1.betterbottomsheet'
+            artifactId 'betterbottomsheet'
+            version '3.0'
+            artifact("$buildDir/outputs/aar/bottomsheet-release.aar")
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
+                configurations.compile.allDependencies.each {
+                    if(it.group != null && (it.name != null || "unspecified".equals(it.name)) && it.version != null)
+                    {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url  "http://dl.bintray.com/markusamshove/maven" }
+}
+

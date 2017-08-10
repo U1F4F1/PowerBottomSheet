@@ -4,9 +4,9 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
-import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheet;
-import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState;
-import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior;
+import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheet;
+import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetState;
+import com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
