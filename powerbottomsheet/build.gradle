@@ -58,8 +58,8 @@ dependencies {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId 'com.u1f4f1.betterbottomsheet'
-            artifactId 'betterbottomsheet'
+            groupId 'com.u1f4f1.powerbetterbottomsheet'
+            artifactId 'powerbetterbottomsheet'
             version '3.0'
             artifact("$buildDir/outputs/aar/bottomsheet-release.aar")
             pom.withXml {
