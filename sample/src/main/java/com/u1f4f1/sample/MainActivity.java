@@ -3,11 +3,8 @@ package com.u1f4f1.sample;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
-import com.airbnb.epoxy.EpoxyModel;
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheet;
-import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetAdapter;
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState;
 import com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior;
 
@@ -30,9 +27,9 @@ public class MainActivity extends AppCompatActivity {
         final int activeColor = ContextCompat.getColor(this, R.color.colorAccent);
         final int inactiveColor = ContextCompat.getColor(this, R.color.colorPrimaryDark);
 
-        bottomSheet = ((BottomSheet) findViewById(R.id.bottom_sheet));
+        bottomSheet = (BottomSheet) findViewById(R.id.bottom_sheet);
 
-        bottomSheetBehavior = AnchorPointBottomSheetBehavior.Companion.from(bottomSheet);
+        bottomSheetBehavior = (AnchorPointBottomSheetBehavior<BottomSheet>) AnchorPointBottomSheetBehavior.Companion.from(bottomSheet);
 
         bottomSheet.setActivatedListener(new AnchorPointBottomSheetBehavior.OnSheetActivatedListener() {
             @Override
@@ -48,12 +45,14 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.button)
     void onClick() {
-        sampleAdapter = new SampleAdapter(bottomSheetBehavior);
+        if (sampleAdapter == null) {
+            sampleAdapter = new SampleAdapter(bottomSheetBehavior);
 
-        bottomSheet.setupRecyclerview(sampleAdapter);
-        bottomSheetBehavior.setState(BottomSheetState.STATE_COLLAPSED);
+            bottomSheet.setupRecyclerview(sampleAdapter);
+            sampleAdapter.addFakeViews();
+        }
 
-        sampleAdapter.addFakeViews();
+        bottomSheet.setState(BottomSheetState.STATE_COLLAPSED);
     }
 
     @Override

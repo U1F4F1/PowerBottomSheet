@@ -4,7 +4,7 @@ package com.u1f4f1.betterbottomsheet
 
 import android.util.Log
 
-val LOG_TAG = "BetterBottomSheet"
+val LOG_TAG = "POWERBOTTOMSHEET"
 
 var logLevel: Int = 0
 

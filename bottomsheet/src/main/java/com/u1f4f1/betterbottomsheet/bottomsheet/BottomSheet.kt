@@ -18,6 +18,8 @@ import inkapplicaitons.android.logger.ConsoleLogger
 import inkapplicaitons.android.logger.Logger
 import java.util.*
 
+// todo by default make a BottomSheet 1.5x the size of the screen and animate it in with the loading spinner
+
 abstract class BottomSheet : NestedScrollView {
     var recyclerView: RecyclerView? = null
     protected open var bottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null

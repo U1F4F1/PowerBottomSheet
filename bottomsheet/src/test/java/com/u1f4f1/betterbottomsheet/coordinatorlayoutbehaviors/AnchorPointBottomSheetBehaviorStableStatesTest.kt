@@ -128,6 +128,8 @@ class AnchorPointBottomSheetBehaviorTopForState(val input: BottomSheetState, val
 
     @Test
     fun isTopCorrect() {
+
+
         behavior.getTopForState(input) shouldEqual expected
     }
 }
