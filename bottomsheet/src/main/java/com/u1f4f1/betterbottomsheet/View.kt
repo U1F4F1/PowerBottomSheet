@@ -3,7 +3,7 @@ package com.u1f4f1.betterbottomsheet
 import android.view.View
 
 /**
- * Returns a more human readable version of Google's toString
+ * Returns a more human readable version of Google's toString   =
  */
 fun View.humanReadableToString() : String {
     return parseString(this.toString())
