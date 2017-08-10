@@ -29,13 +29,10 @@ import android.util.AttributeSet
 import android.util.SparseIntArray
 import android.view.*
 import com.kylealanr.gesturedetectors.GestureDetectors
-import com.u1f4f1.betterbottomsheet.R
+import com.u1f4f1.betterbottomsheet.*
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheet
 import com.u1f4f1.betterbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.betterbottomsheet.bottomsheet.SavedState
-import com.u1f4f1.betterbottomsheet.debug
-import com.u1f4f1.betterbottomsheet.info
-import com.u1f4f1.betterbottomsheet.trace
 import inkapplicaitons.android.logger.ConsoleLogger
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
@@ -156,6 +153,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         // todo rewrite all of this
         override fun onViewReleased(releasedChild: View, xvel: Float, yvel: Float) {
+            trace("onViewReleased(${releasedChild.humanReadableToString()}: View, xvel: Float, yvel: Float)")
+
             val top: Int
             val targetState: BottomSheetState
             if (yvel < 0) { // Moving up
@@ -188,7 +187,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 ViewCompat.postOnAnimation(releasedChild, SettleRunnable(releasedChild, targetState))
             } else {
                 trace("setting captured view state without settling")
-                ConsoleLogger(0).debug("")
                 setStateInternal(targetState)
             }
         }
@@ -268,8 +266,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 return
             }
 
+            field = value
+
             if (isStateStable(value)) {
-                field = value
                 this.lastStableState = value
             } else {
                 return
@@ -277,15 +276,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
             if (viewRef == null) {
                 // The view is not laid out yet; modify state and let onLayoutChild handle it later
-                trace("view not laid out yet")
                 return
             }
 
-            val child = viewRef!!.get()
-            if (child == null) {
-                trace("viewRef returned null")
-                return
-            }
+            val child = viewRef!!.get() ?: return
 
             attemptToActivateBottomsheet(child)
 
@@ -472,6 +466,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         a = context.obtainStyledAttributes(attrs, R.styleable.AnchorPointBottomSheetBehavior)
         anchorPoint = a.getDimension(R.styleable.AnchorPointBottomSheetBehavior_anchorPoint, ANCHOR_POINT_AUTO.toFloat()).toInt()
+        logLevel = a.getInt(R.styleable.AnchorPointBottomSheetBehavior_logLevel, -1)
         a.recycle()
 
         val configuration = ViewConfiguration.get(context)
@@ -479,14 +474,18 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         gestureDetectorCompat = GestureDetectorCompat(context, GestureDetectors.OnSingleTapUp({ handleOnSingleTapUp(it) }))
 
-        info("height: %s, width: %s, anchorPoint: %s, peekHeight: %s, minOffset: %s, maxOffset: %s", Resources.getSystem().displayMetrics.heightPixels, Resources.getSystem().displayMetrics.widthPixels, anchorPoint, peekHeight, minOffset, maxOffset)
+        info("Created AnchorPointBottomSheetBehavior with values = height: %s, width: %s, anchorPoint: %s, peekHeight: %s, minOffset: %s, maxOffset: %s", Resources.getSystem().displayMetrics.heightPixels, Resources.getSystem().displayMetrics.widthPixels, anchorPoint, peekHeight, minOffset, maxOffset)
     }
 
     override fun onSaveInstanceState(parent: CoordinatorLayout?, child: V?): Parcelable {
+        trace("onSaveInstanceState(${parent?.humanReadableToString()}: CoordinatorLayout?, ${child?.humanReadableToString()}: V?): Parcelable")
+
         return SavedState(state)
     }
 
     override fun onRestoreInstanceState(parent: CoordinatorLayout?, child: V?, state: Parcelable?) {
+        trace("fun onRestoreInstanceState(${parent?.humanReadableToString()}: CoordinatorLayout?, ${parent?.humanReadableToString()}: V?, $state: Parcelable?)")
+
         // todo restore the position of the screen the sheet was on, and the state that we should animate too
         val ss = state as SavedState
         // Intermediate states are restored as collapsed state
@@ -506,6 +505,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      */
     open fun handleOnSingleTapUp(e: MotionEvent): Boolean {
         if (state == BottomSheetState.STATE_COLLAPSED) {
+            trace("Tapping on Collapsed BottomSheet")
             if (viewRef!!.get() != null) {
                 (viewRef!!.get() as BottomSheet).isActivated = true
                 bottomSheetIsActive = true
@@ -727,16 +727,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         val currentTop = child.top
         val newTop = currentTop - dy
 
-        // Force stop at the anchor - do not go from collapsed to expanded in one scroll
-        if (lastStableState == BottomSheetState.STATE_COLLAPSED && newTop < anchorPoint || lastStableState == BottomSheetState.STATE_EXPANDED && newTop > anchorPoint) {
-
-            // eating all these events, don't move the view or update the callback for onSlide
-            consumed[1] = dy
-
-            nestedScrolled = true
-            return
-        }
-
         if (dy > 0) { // Upward
             trace("upward")
             if (newTop < minOffset) {
@@ -848,6 +838,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     override fun onNestedPreFling(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, velocityX: Float, velocityY: Float): Boolean {
         trace("override fun onNestedPreFling($coordinatorLayout: CoordinatorLayout?, $child: V?, $target: View?, $velocityX: Float, $velocityY: Float): Boolean")
         return target === nestedScrollingChildRef?.get() && (state != BottomSheetState.STATE_EXPANDED || super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY))
+//        return super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY)
     }
 
     override fun onNestedFling(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, velocityX: Float, velocityY: Float, consumed: Boolean): Boolean {
@@ -953,6 +944,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     // based on current velocity, could be refactored to handle moving between states
     internal fun shouldHide(child: View, yvel: Float): Boolean {
+        trace("shouldHide($child.toString().humanReadableViewString(): View, $yvel: Float)")
+
         if (skipCollapsed) {
             return true
         }

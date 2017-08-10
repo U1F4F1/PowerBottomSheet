@@ -3,6 +3,7 @@
     <!-- we use the attrs from the BottomSheetBehavior class for things like peek height -->
     <declare-styleable name="AnchorPointBottomSheetBehavior">
         <attr name="anchorPoint" format="dimension"/>
+        <attr name="logLevel" format="integer" />
     </declare-styleable>
 
     <declare-styleable name="MergedAppBarLayoutBehavior">
