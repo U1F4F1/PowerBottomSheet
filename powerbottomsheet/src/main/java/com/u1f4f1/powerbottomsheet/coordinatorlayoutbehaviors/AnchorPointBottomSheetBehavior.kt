@@ -382,6 +382,19 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      */
     var skipCollapsed: Boolean = false
 
+    /**
+     * Stop reacting to touch events
+     *
+     * @attr ref R.styleable.AnchorPointBottomSheetBehavior_disableDragging
+     */
+    var disableDragging: Boolean = false
+
+    /**
+     * This will set the max height for the sheet to the peek height. The sheet will still react to
+     * touch events and can be dismissed by scrolling it down.
+     */
+    var lockedToCollapsed: Boolean = false
+
     protected var maximumVelocity: Float = 0.toFloat()
 
     protected var ignoreEvents: Boolean = false
@@ -426,6 +439,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         a = context.obtainStyledAttributes(attrs, R.styleable.AnchorPointBottomSheetBehavior)
 
         logLevel = a.getInt(R.styleable.AnchorPointBottomSheetBehavior_logLevel, -1)
+        disableDragging = a.getBoolean(R.styleable.AnchorPointBottomSheetBehavior_disableDragging, false)
+
         a.recycle()
 
         val configuration = ViewConfiguration.get(context)
@@ -463,7 +478,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * [GestureDetectors] implementation that handles a single tap on to handle expanding the [BottomSheet]
      */
     open fun handleOnSingleTapUp(e: MotionEvent): Boolean {
-        if (state == BottomSheetState.STATE_COLLAPSED) {
+        if (state == BottomSheetState.STATE_COLLAPSED && !lockedToCollapsed) {
             trace("Tapping on Collapsed BottomSheet")
             if (viewRef!!.get() != null) {
                 (viewRef!!.get() as BottomSheet).isActivated = true
@@ -553,6 +568,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onInterceptTouchEvent(parent: CoordinatorLayout, child: V, event: MotionEvent): Boolean {
+        if (disableDragging && parent.isPointInChildBounds(child, event.x.toInt(), event.y.toInt())) {
+            return true
+        }
+
         // send this event to the GestureDetector here so we can react to an event without subscribing to updates
         if (event.rawY > parent.height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
             gestureDetectorCompat.onTouchEvent(event)
@@ -613,6 +632,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onTouchEvent(parent: CoordinatorLayout?, child: V?, event: MotionEvent?): Boolean {
+        if (disableDragging) {
+            return true
+        }
+
         if (!child!!.isShown) {
             return false
         }
@@ -683,10 +706,17 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -consumed[1])
                 setStateInternal(BottomSheetState.STATE_EXPANDED)
             } else {
+                var moved = dy
+                if (lockedToCollapsed) {
+                    if (child.top - moved < maxOffset) {
+                        moved = 0
+                    }
+                }
+
                 trace("newTop >= minOffset")
-                consumed[1] = dy
-                ViewCompat.offsetTopAndBottom(child, -dy)
-                trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -dy)
+                consumed[1] = moved
+                ViewCompat.offsetTopAndBottom(child, -moved)
+                trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -moved)
                 setStateInternal(BottomSheetState.STATE_DRAGGING)
             }
         } else if (dy < 0) { // Downward
@@ -743,7 +773,11 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         if (yVelocity < -150) {
             // snap up
             trace("velocity %s snapping up", yVelocity)
-            targetState = getNextStableState(lastStableState)
+            if (lockedToCollapsed) {
+                targetState = BottomSheetState.STATE_COLLAPSED
+            } else {
+                targetState = getNextStableState(lastStableState)
+            }
         } else if (yVelocity > 150) {
             //snap down
             trace("velocity %s snapping down", yVelocity)
@@ -870,6 +904,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         val shouldActivate = bottomSheet.top < (bottomSheet.parent as View).height - peekHeight || state != BottomSheetState.STATE_COLLAPSED
 
         if (shouldActivate == bottomSheetIsActive) return
+
+        activeCallback?.isActivated(shouldActivate)
 
         if (shouldActivate) {
             bottomSheet.isActivated = true

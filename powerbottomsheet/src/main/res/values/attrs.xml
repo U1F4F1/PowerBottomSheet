@@ -4,6 +4,8 @@
     <declare-styleable name="AnchorPointBottomSheetBehavior">
         <attr name="anchorPoint" format="dimension"/>
         <attr name="logLevel" format="integer" />
+        <attr name="disableDragging" format="boolean" />
+        <attr name="lockedToCollapsed" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="MergedAppBarLayoutBehavior">

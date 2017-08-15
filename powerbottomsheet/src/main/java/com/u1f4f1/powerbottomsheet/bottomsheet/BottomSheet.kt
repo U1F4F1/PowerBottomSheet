@@ -18,7 +18,7 @@ import com.u1f4f1.powerbottomsheet.trace
 import java.util.*
 
 abstract class BottomSheet : NestedScrollView {
-    var recyclerView: RecyclerView? = null
+    open var recyclerView: RecyclerView? = null
     protected open var bottomSheetBehavior: AnchorPointBottomSheetBehavior<*>? = null
         get() = field
         set(value) {
