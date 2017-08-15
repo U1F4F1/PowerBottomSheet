@@ -11,7 +11,7 @@ import com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomS
 import com.u1f4f1.powerbottomsheet.trace
 import java.util.concurrent.LinkedBlockingDeque
 
-abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*>) : EpoxyAdapter() {
+abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*>?) : EpoxyAdapter() {
     val updates = LinkedBlockingDeque<Runnable>()
     lateinit var recyclerViewTransitionRunnable: Runnable
 
@@ -24,11 +24,11 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
             }
         }
 
-        behavior.addBottomSheetStateCallback(onBottomSheetStateChanged)
+        behavior?.addBottomSheetStateCallback(onBottomSheetStateChanged)
     }
 
     override fun notifyModelChanged(model: EpoxyModel<*>?) {
-        if (!behavior.isStable) {
+        if (!(behavior?.isStable ?: false)) {
             updates.add(Runnable {
                 super.notifyModelChanged(model)
             })
@@ -39,7 +39,7 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
     }
 
     override fun notifyModelsChanged() {
-        if (!behavior.isStable) {
+        if (!(behavior?.isStable ?: false)) {
             updates.add(Runnable {
                 super.notifyModelsChanged()
             })

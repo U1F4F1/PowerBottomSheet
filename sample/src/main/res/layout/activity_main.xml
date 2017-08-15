@@ -34,7 +34,7 @@
     <ImageView
         android:id="@+id/backdrop_image"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/anchor_point"
+        android:layout_height="wrap_content"
         android:clickable="true"
         android:fitsSystemWindows="true"
         app:layout_behavior="@string/BackDropBottomSheetBehavior"
@@ -75,7 +75,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_anchor="@id/bottom_sheet"
-        app:layout_behavior="com.u1f4f1.betterbottomsheet.coordinatorlayoutbehaviors.ScrollAwareBehavior"
+        app:layout_behavior="@string/ScrollAwareBehavior"
         >
 
         <android.support.design.widget.FloatingActionButton

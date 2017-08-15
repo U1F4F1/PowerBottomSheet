@@ -107,11 +107,11 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
 
     override fun onInterceptTouchEvent(parent: CoordinatorLayout, child: V, event: MotionEvent): Boolean {
         // send this event to the GestureDetector here so we can react to an event without subscribing to updates
-        if (event!!.rawY > height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
+        if (event.rawY > parent.height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
             gestureDetectorCompat.onTouchEvent(event)
         }
 
-        if (!child!!.isShown) {
+        if (!child.isShown) {
             ignoreEvents = true
             return false
         }
@@ -158,8 +158,8 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
                 Math.abs(initialY - event.y) > viewDragHelper!!.touchSlop
     }
 
-    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View?, dx: Int, dy: Int, consumed: IntArray) {
-        attemptToActivateBottomsheet(child!!)
+    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
+        attemptToActivateBottomsheet(child)
 
         val scrollingChild = nestedScrollingChildRef?.get()
         if (target !== scrollingChild) {

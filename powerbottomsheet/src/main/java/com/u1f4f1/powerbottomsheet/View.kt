@@ -1,6 +1,11 @@
 package com.u1f4f1.powerbottomsheet
 
 import android.view.View
+import android.view.ViewGroup
+
+fun ViewGroup.getAllChildren(): List<View> {
+    return (0..this.childCount - 1).map { this.getChildAt(it) }
+}
 
 /**
  * Returns a more human readable version of Google's toString   =

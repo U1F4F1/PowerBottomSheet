@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import com.u1f4f1.powerbottomsheet.getAllChildren
 
 import java.lang.ref.WeakReference
 
@@ -56,10 +57,9 @@ class ScrollAwareBehavior<V : View>(context: Context, @Suppress("UNUSED_PARAMETE
         }
     }
 
-    override fun onStartNestedScroll(coordinatorLayout: CoordinatorLayout?, child: V,
-                                     directTargetChild: View?, target: View?, nestedScrollAxes: Int): Boolean {
+    override fun onStartNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, directTargetChild: View, target: View, axes: Int, type: Int): Boolean {
         // Ensure we react to vertical scrolling
-        return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL
+        return type == ViewCompat.SCROLL_AXIS_VERTICAL
     }
 
     override fun layoutDependsOn(parent: CoordinatorLayout?, child: V, dependency: View?): Boolean {
@@ -76,10 +76,16 @@ class ScrollAwareBehavior<V : View>(context: Context, @Suppress("UNUSED_PARAMETE
             getBottomSheetBehavior(coordinatorLayout!!)
         }
 
+        val fabs = (child as? ViewGroup)?.getAllChildren()?.filter { it is FloatingActionButton }?.map { it as FloatingActionButton }
+
         val DyFix = getDyBetweenChildAndDependency(child, bottomSheet!!)
 
         if (child.y + DyFix < offset) {
-            child.visibility = View.INVISIBLE
+            if (fabs?.isNotEmpty() ?: false) {
+                fabs?.forEach { it.hide() }
+            } else {
+                child.visibility = View.INVISIBLE
+            }
         } else if (child.y + DyFix >= offset) {
             /*
              * We are calculating every time point in Y where BottomSheet get {@link BottomSheetBehaviorGoogleMapsLike#STATE_COLLAPSED}.
@@ -92,11 +98,17 @@ class ScrollAwareBehavior<V : View>(context: Context, @Suppress("UNUSED_PARAMETE
             val collapsedY = bottomSheet.height - bottomSheetBehaviorRef!!.get()!!.peekHeight
 
             if (child.y + DyFix > collapsedY) {
-
-                child.visibility = View.INVISIBLE
-
+                if (fabs?.isNotEmpty() ?: false) {
+                    fabs?.forEach { it.hide() }
+                } else {
+                    child.visibility = View.INVISIBLE
+                }
             } else {
-                child.visibility = View.VISIBLE
+                if (fabs?.isNotEmpty() ?: false) {
+                    fabs?.forEach { it.show() }
+                } else {
+                    child.visibility = View.VISIBLE
+                }
             }
         }
 

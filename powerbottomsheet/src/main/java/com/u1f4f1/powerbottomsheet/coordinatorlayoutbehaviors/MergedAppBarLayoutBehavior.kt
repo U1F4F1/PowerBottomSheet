@@ -1,6 +1,7 @@
 package com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors
 
 import android.content.Context
+import android.os.Build
 import android.os.Parcelable
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.BottomSheetBehavior
@@ -9,6 +10,8 @@ import android.support.v7.widget.Toolbar
 import android.util.AttributeSet
 import android.view.View
 import com.u1f4f1.powerbottomsheet.R
+import com.u1f4f1.powerbottomsheet.debug
+import com.u1f4f1.powerbottomsheet.trace
 import com.u1f4f1.powerbottomsheet.warn
 
 /**
@@ -104,6 +107,13 @@ class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet
 
         drawable.setBounds(0, (bounds.bottom - bounds.bottom * heightRate).toInt(), bounds.right, bounds.bottom)
         child.background = drawable
+
+        val fullyExpanded = heightRate == 1f
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            child.elevation = if (fullyExpanded) 8f else 0f
+        }
+
+        debug("rate: $rate, currentChildY: $currentChildY, bounds: $bounds, heightRate: $heightRate")
 
         return true
     }

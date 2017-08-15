@@ -130,7 +130,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
             if (state == BottomSheetState.STATE_EXPANDED && activePointerId == pointerId) {
                 val scroll = nestedScrollingChildRef?.get()
-                if (scroll != null && ViewCompat.canScrollVertically(scroll, -1)) {
+                if (scroll != null && scroll.canScrollVertically(-1)) {
                     // Let the content scroll up
                     return false
                 }
@@ -149,7 +149,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             }
         }
 
-        // todo rewrite all of this
         override fun onViewReleased(releasedChild: View, xvel: Float, yvel: Float) {
             trace("onViewReleased(${releasedChild.humanReadableToString()}: View, xvel: Float, yvel: Float)")
 
@@ -306,7 +305,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     internal val yVelocity: Float
         get() {
             velocityTracker!!.computeCurrentVelocity(1000, maximumVelocity)
-            return VelocityTrackerCompat.getYVelocity(velocityTracker, activePointerId)
+            return velocityTracker!!.getYVelocity(activePointerId)
         }
 
     val isStable: Boolean
@@ -348,47 +347,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     protected var peekHeightMin: Int = 0
 
     var peekHeight: Int = 0
-        /**
-         * Gets the height of the bottom sheet when it is collapsed.
-
-         * @return The height of the collapsed bottom sheet in pixels, or [.PEEK_HEIGHT_AUTO]
-         * * if the sheet is configured to peek automatically at 16:9 ratio keyline
-         * *
-         * @attr ref android.support.design.R.styleable#BottomSheetBehavior_Layout_behavior_peekHeight
-         */
-        get() = if (peekHeightAuto) PEEK_HEIGHT_AUTO else field
-
-        /**
-         * Sets the height of the bottom sheet when it is collapsed.
-
-         * @param value The height of the collapsed bottom sheet in pixels, or
-         * *                   [.PEEK_HEIGHT_AUTO] to configure the sheet to peek automatically
-         * *                   at 16:9 ratio keyline.
-         * *
-         * @attr ref android.support.design.R.styleable#BottomSheetBehavior_Layout_behavior_peekHeight
-         */
-        set(value) {
-            var layout = false
-            if (value == PEEK_HEIGHT_AUTO) {
-                if (!peekHeightAuto) {
-                    peekHeightAuto = true
-                    field = PEEK_HEIGHT_AUTO
-                    layout = true
-                }
-            } else {
-                peekHeightAuto = false
-                field = Math.max(0, value)
-                maxOffset = parentHeight - value
-                layout = true
-            }
-
-            if (layout && state == BottomSheetState.STATE_COLLAPSED && viewRef != null) {
-                val view = viewRef!!.get()
-                view?.requestLayout()
-            }
-        }
 
     var anchorPoint: Int = 0
+        get() = (height - peekHeight) / 2
 
     protected var lastNestedScrollDy: Int = 0
 
@@ -463,7 +424,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         skipCollapsed = a.getBoolean(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_skipCollapsed, false)
 
         a = context.obtainStyledAttributes(attrs, R.styleable.AnchorPointBottomSheetBehavior)
-        anchorPoint = a.getDimension(R.styleable.AnchorPointBottomSheetBehavior_anchorPoint, ANCHOR_POINT_AUTO.toFloat()).toInt()
+
         logLevel = a.getInt(R.styleable.AnchorPointBottomSheetBehavior_logLevel, -1)
         a.recycle()
 
@@ -556,7 +517,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     //region BEHAVIOR CALLBACKS
     override fun onLayoutChild(parent: CoordinatorLayout, child: V, layoutDirection: Int): Boolean {
         if (ViewCompat.getFitsSystemWindows(parent) && !ViewCompat.getFitsSystemWindows(child)) {
-            ViewCompat.setFitsSystemWindows(child, true)
+            child.fitsSystemWindows = true
         }
 
         val savedTop = child.top
@@ -565,18 +526,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         // Offset the bottom sheet
         parentHeight = parent.height
 
-        val peekHeight: Int
-        if (peekHeightAuto) {
-            if (peekHeightMin == 0) {
-                peekHeightMin = parent.resources.getDimensionPixelSize(android.support.design.R.dimen.design_bottom_sheet_peek_height_min)
-            }
-            peekHeight = Math.max(peekHeightMin, parentHeight - parent.width * 9 / 16)
-        } else {
-            peekHeight = this.peekHeight
-        }
-
         minOffset = Math.max(0, parentHeight - child.height)
         maxOffset = Math.max(parentHeight - peekHeight, minOffset)
+
+        debug("minOffset $minOffset, maxOffset $maxOffset, anchorPoint $anchorPoint")
 
         if (state == BottomSheetState.STATE_EXPANDED) {
             ViewCompat.offsetTopAndBottom(child, minOffset)
@@ -601,7 +554,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     override fun onInterceptTouchEvent(parent: CoordinatorLayout, child: V, event: MotionEvent): Boolean {
         // send this event to the GestureDetector here so we can react to an event without subscribing to updates
-        if (event.rawY > height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
+        if (event.rawY > parent.height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
             gestureDetectorCompat.onTouchEvent(event)
         }
 
@@ -609,7 +562,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             ignoreEvents = true
             return false
         }
-        val action = MotionEventCompat.getActionMasked(event)
+        val action = event.actionMasked
         // Record the velocity
         if (action == MotionEvent.ACTION_DOWN) {
             reset()
@@ -663,7 +616,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         if (!child!!.isShown) {
             return false
         }
-        val action = MotionEventCompat.getActionMasked(event!!)
+        val action = event!!.actionMasked
         if (state == BottomSheetState.STATE_DRAGGING && action == MotionEvent.ACTION_DOWN) {
             return true
         }
@@ -686,8 +639,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         return !ignoreEvents
     }
 
-    override fun onStartNestedScroll(coordinatorLayout: CoordinatorLayout?, child: V?, directTargetChild: View?, target: View?, nestedScrollAxes: Int): Boolean {
-        if (shouldScrollWithView.get(child!!.hashCode() + directTargetChild!!.hashCode(), -1) != -1) {
+    override fun onStartNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, directTargetChild: View, target: View, axes: Int, type: Int): Boolean {
+        if (shouldScrollWithView.get(child.hashCode() + directTargetChild.hashCode(), -1) != -1) {
             return shouldScrollWithView.get(child.hashCode() + directTargetChild.hashCode()) == 1
         }
 
@@ -697,7 +650,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         // directTargetChild is the direct parent of the NestedScrollingChild that got us here
         var directTargetChildDescendsFromChild = false
         val directTargetChildIsChild = directTargetChild == child
-        val verticalNestedScroll = nestedScrollAxes and ViewCompat.SCROLL_AXIS_VERTICAL != 0
+        val verticalNestedScroll = axes == View.SCROLL_AXIS_VERTICAL
 
         if (child is ViewGroup) {
             directTargetChildDescendsFromChild = recursivelyCheckIfDescendedFrom(directTargetChild, child as ViewGroup)
@@ -710,11 +663,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         return shouldScroll
     }
 
-    override fun onNestedScrollAccepted(coordinatorLayout: CoordinatorLayout?, child: V?, directTargetChild: View?, target: View?, nestedScrollAxes: Int) {
-        super.onNestedScrollAccepted(coordinatorLayout, child, directTargetChild, target, nestedScrollAxes)
-    }
-
-    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View?, dx: Int, dy: Int, consumed: IntArray) {
+    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
         attemptToActivateBottomsheet(child as View)
 
         val scrollingChild = nestedScrollingChildRef?.get()
@@ -742,7 +691,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             }
         } else if (dy < 0) { // Downward
             trace("downward")
-            if (!ViewCompat.canScrollVertically(target, -1)) {
+            if (!target.canScrollVertically(-1)) {
                 trace("can scroll vertically")
                 if (newTop <= maxOffset || isHideable) {
                     trace("newTop <= maxOffset || hideable")
@@ -765,11 +714,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         nestedScrolled = true
     }
 
-    override fun onNestedScroll(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, dxConsumed: Int, dyConsumed: Int, dxUnconsumed: Int, dyUnconsumed: Int) {
-        super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed)
-    }
-
-    override fun onStopNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View) {
+    override fun onStopNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View, type: Int) {
         if (child.top == minOffset) {
             setStateInternal(BottomSheetState.STATE_EXPANDED)
             lastStableState = BottomSheetState.STATE_EXPANDED
@@ -791,7 +736,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         // last nested scroll is the raw values in pixels of the last drag event
         // if will be negative if the user swiped down and positive if they swiped up
-        val percentage = lastNestedScrollDy.toFloat() / height
+        val percentage = lastNestedScrollDy.toFloat() / coordinatorLayout.height
 
         // attempt to snap to the right state with the current y velocity, but fall back to the
         // last movement by percentage of the screen
@@ -833,14 +778,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         nestedScrolled = false
     }
 
-    override fun onNestedPreFling(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, velocityX: Float, velocityY: Float): Boolean {
+    override fun onNestedPreFling(coordinatorLayout: CoordinatorLayout, child: V, target: View, velocityX: Float, velocityY: Float): Boolean {
         trace("override fun onNestedPreFling($coordinatorLayout: CoordinatorLayout?, $child: V?, $target: View?, $velocityX: Float, $velocityY: Float): Boolean")
         return target === nestedScrollingChildRef?.get() && (state != BottomSheetState.STATE_EXPANDED || super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY))
-//        return super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY)
-    }
-
-    override fun onNestedFling(coordinatorLayout: CoordinatorLayout?, child: V?, target: View?, velocityX: Float, velocityY: Float, consumed: Boolean): Boolean {
-        return super.onNestedFling(coordinatorLayout, child, target, velocityX, velocityY, consumed)
     }
     //endregion
 
@@ -927,7 +867,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected fun activateBottomsheetIfTopAbovePeekHeight(bottomSheet: BottomSheet) {
-        val shouldActivate = bottomSheet.top < height - peekHeight || state != BottomSheetState.STATE_COLLAPSED
+        val shouldActivate = bottomSheet.top < (bottomSheet.parent as View).height - peekHeight || state != BottomSheetState.STATE_COLLAPSED
 
         if (shouldActivate == bottomSheetIsActive) return
 

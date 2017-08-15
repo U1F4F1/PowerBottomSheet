@@ -11,7 +11,7 @@ import com.u1f4f1.powerbottomsheet.trace
 
 class LandscapeAnchorPointBottomSheetBehavior<V : View>(context: Context, attrs: AttributeSet?) : AnchorPointBottomSheetBehavior<V>(context, attrs) {
 
-    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View?, dx: Int, dy: Int, consumed: IntArray) {
+    override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
         attemptToActivateBottomsheet(child!!)
 
         val scrollingChild = nestedScrollingChildRef!!.get()

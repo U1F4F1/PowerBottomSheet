@@ -12,10 +12,10 @@ import android.util.SparseArray
 import android.view.View
 import android.view.ViewTreeObserver
 import com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
+import com.u1f4f1.powerbottomsheet.humanReadableToString
+import com.u1f4f1.powerbottomsheet.info
 import com.u1f4f1.powerbottomsheet.trace
 import java.util.*
-
-// todo by default make a BottomSheet 1.5x the size of the screen and animate it in with the loading spinner
 
 abstract class BottomSheet : NestedScrollView {
     var recyclerView: RecyclerView? = null
@@ -37,11 +37,17 @@ abstract class BottomSheet : NestedScrollView {
                     slideCallbacks.remove(it)
                 }
             }
+
+            if (activatedCallback != null) {
+                field!!.activeCallback = activatedCallback
+            }
         }
 
     private val postOnStableStateRunnables = SparseArray<MutableList<Runnable>>()
 
     private var bottomSheetAdapter: BottomSheetAdapter? = null
+
+    private var activatedCallback: AnchorPointBottomSheetBehavior.OnSheetActivatedListener? = null
 
     private var stateCallbacks: MutableSet<AnchorPointBottomSheetBehavior.BottomSheetStateCallback> = mutableSetOf()
     private var slideCallbacks: MutableSet<AnchorPointBottomSheetBehavior.BottomSheetSlideCallback> = mutableSetOf()
@@ -50,12 +56,24 @@ abstract class BottomSheet : NestedScrollView {
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
+    init {
+        info("Created BottomSheet ${this.humanReadableToString()}")
+    }
+
     fun setActivatedListener(activatedListener: AnchorPointBottomSheetBehavior.OnSheetActivatedListener) {
-        bottomSheetBehavior?.activeCallback = activatedListener
+        if (bottomSheetAdapter == null) {
+            activatedCallback = activatedListener
+        } else {
+            bottomSheetBehavior?.activeCallback = activatedListener
+        }
     }
 
     open fun removeAdapter() {
         this.recyclerView?.adapter = null
+    }
+
+    open fun getState() : BottomSheetState? {
+        return this.bottomSheetBehavior?.state
     }
 
     open fun setState(state: BottomSheetState) {
