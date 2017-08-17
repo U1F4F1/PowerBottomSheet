@@ -584,7 +584,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         // send this event to the GestureDetector here so we can react to an event without subscribing to updates
         if (event.rawY > parent.height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
-            gestureDetectorCompat.onTouchEvent(event)
             if (!parent.isPointInChildBounds(parent.findViewWithTag(consumeEventsTag), event.rawX.toInt(), event.y.toInt())) {
                 gestureDetectorCompat.onTouchEvent(event)
             }
