@@ -165,6 +165,11 @@ abstract class BottomSheet : NestedScrollView {
     }
 
     fun postOnNextStableState(runnable: Runnable) {
+        if (this.getState()?.isStable() == true) {
+            runnable.run()
+            return
+        }
+
         if (postOnStableStateRunnables.get(NEXT_STABLE_STATE_RUNNABLES_KEY) != null) {
             postOnStableStateRunnables.get(NEXT_STABLE_STATE_RUNNABLES_KEY).add(runnable)
         } else {
