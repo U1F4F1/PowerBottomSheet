@@ -36,6 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
+        android:elevation="4dp"
         android:fitsSystemWindows="true"
         app:layout_behavior="@string/BackDropBottomSheetBehavior"
         android:src="@drawable/doggo"
@@ -74,6 +75,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="16dp"
         app:layout_anchor="@id/bottom_sheet"
         app:layout_behavior="@string/ScrollAwareBehavior"
         >
@@ -83,6 +85,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
+            android:tag="@string/consume_touch_events"
+            android:elevation="16dp"
             android:layout_margin="@dimen/fab_margin"
             android:clickable="true"
             />

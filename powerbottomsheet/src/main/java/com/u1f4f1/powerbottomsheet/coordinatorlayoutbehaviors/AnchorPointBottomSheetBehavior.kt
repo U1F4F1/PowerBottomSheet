@@ -35,6 +35,13 @@ import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.powerbottomsheet.bottomsheet.SavedState
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
+import android.icu.lang.UCharacter.GraphemeClusterBreak.V
+import android.text.method.Touch.onTouchEvent
+import android.icu.lang.UCharacter.GraphemeClusterBreak.V
+
+
+
+
 
 /**
  * An interaction behavior plugin for a child view of [CoordinatorLayout] to make it work as
@@ -395,6 +402,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      */
     var lockedToCollapsed: Boolean = false
 
+    private var consumeEventsTag: String? = null
+
     protected var maximumVelocity: Float = 0.toFloat()
 
     protected var ignoreEvents: Boolean = false
@@ -440,6 +449,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         logLevel = a.getInt(R.styleable.AnchorPointBottomSheetBehavior_logLevel, -1)
         disableDragging = a.getBoolean(R.styleable.AnchorPointBottomSheetBehavior_disableDragging, false)
+        consumeEventsTag = context.getString(R.string.consume_touch_events)
 
         a.recycle()
 
@@ -574,7 +584,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         // send this event to the GestureDetector here so we can react to an event without subscribing to updates
         if (event.rawY > parent.height - peekHeight && state == BottomSheetState.STATE_COLLAPSED) {
-            gestureDetectorCompat.onTouchEvent(event)
+            if (!parent.isPointInChildBounds(parent.findViewWithTag(consumeEventsTag), event.rawX.toInt(), event.y.toInt())) {
+                gestureDetectorCompat.onTouchEvent(event)
+            }
         }
 
         if (!child.isShown) {

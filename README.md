@@ -1,6 +1,9 @@
 # 🔋 PowerBottomSheet 🔋
 
+
 A BottomSheet library for Android.
+
+[![](https://jitpack.io/v/u1f4f1/PowerBottomSheet.svg?style=flat-square)](https://jitpack.io/#u1f4f1/PowerBottomSheet)
 
 ## Including
 
