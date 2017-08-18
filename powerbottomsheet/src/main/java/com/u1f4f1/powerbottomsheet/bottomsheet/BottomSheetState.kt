@@ -1,5 +1,7 @@
 package com.u1f4f1.powerbottomsheet.bottomsheet
 
+import java.util.*
+
 /**
  * Google makes it really hard to replace their stupid int defs with an enum, because they use
  * these constants for all kinds of animation calls within the framework.
@@ -42,17 +44,24 @@ enum class BottomSheetState constructor(private val id: Int, private val value: 
         return value
     }
 
+    fun isStable() : Boolean {
+        return BottomSheetState.Companion.isStateStable(this)
+    }
+
     companion object {
 
-        fun fromInt(state: Int): BottomSheetState {
-            for (s in BottomSheetState.values()) {
-                if (s.id == state) {
-                    return s
-                }
-            }
+        val STABLE_STATES = EnumSet.of(STATE_HIDDEN, STATE_COLLAPSED, STATE_ANCHOR_POINT, STATE_EXPANDED)
 
+        fun isStateStable(state: BottomSheetState) : Boolean {
+            return when (state) {
+                STATE_HIDDEN, STATE_COLLAPSED, STATE_ANCHOR_POINT, STATE_EXPANDED -> true
+                else -> false
+            }
+        }
+
+        fun fromInt(state: Int): BottomSheetState {
             // we want controls to default to this
-            return STATE_HIDDEN
+            return BottomSheetState.values().firstOrNull { it.id == state } ?: STATE_HIDDEN
         }
     }
 }
