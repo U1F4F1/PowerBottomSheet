@@ -44,6 +44,7 @@ abstract class BottomSheet : NestedScrollView {
         }
 
     private val postOnStableStateRunnables = SparseArray<MutableList<Runnable>>()
+    private val NEXT_STABLE_STATE_RUNNABLES_KEY = 666
 
     private var bottomSheetAdapter: BottomSheetAdapter? = null
 
@@ -123,10 +124,20 @@ abstract class BottomSheet : NestedScrollView {
 
         val onBottomSheetStateChanged = object : AnchorPointBottomSheetBehavior.BottomSheetStateCallback {
             override fun onStateChanged(bottomSheet: View, newState: BottomSheetState) {
-                if (postOnStableStateRunnables.get(newState.ordinal) != null && !postOnStableStateRunnables.get(newState.ordinal).isEmpty()) {
-                    for (runnable in postOnStableStateRunnables.get(newState.ordinal)) {
+                val runnablesForCurrentState = postOnStableStateRunnables.get(newState.ordinal)
+                val runnablesForNextStableState = postOnStableStateRunnables.get(NEXT_STABLE_STATE_RUNNABLES_KEY)
+
+                if (runnablesForCurrentState != null && runnablesForCurrentState.isNotEmpty()) {
+                    for (runnable in runnablesForCurrentState) {
                         runnable.run()
                         postOnStableStateRunnables.get(newState.ordinal).remove(runnable)
+                    }
+                }
+
+                if (runnablesForNextStableState != null && runnablesForNextStableState.isNotEmpty()) {
+                    for (runnable in runnablesForNextStableState) {
+                        runnable.run()
+                        postOnStableStateRunnables.get(NEXT_STABLE_STATE_RUNNABLES_KEY).remove(runnable)
                     }
                 }
 
@@ -151,6 +162,18 @@ abstract class BottomSheet : NestedScrollView {
 
     fun addOnStateChangedListener(stateCallback: AnchorPointBottomSheetBehavior.BottomSheetStateCallback) {
         bottomSheetBehavior!!.addBottomSheetStateCallback(stateCallback)
+    }
+
+    fun postOnNextStableState(runnable: Runnable) {
+        if (postOnStableStateRunnables.get(NEXT_STABLE_STATE_RUNNABLES_KEY) != null) {
+            postOnStableStateRunnables.get(NEXT_STABLE_STATE_RUNNABLES_KEY).add(runnable)
+        } else {
+            postOnStableStateRunnables.put(NEXT_STABLE_STATE_RUNNABLES_KEY, object : ArrayList<Runnable>() {
+                init {
+                    add(runnable)
+                }
+            })
+        }
     }
 
     fun postOnStateChange(state: BottomSheetState, runnable: Runnable) {
