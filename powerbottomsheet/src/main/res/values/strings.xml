@@ -10,4 +10,6 @@
     <string name="MergedAppBarLayoutBehavior" translatable="false">com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.MergedAppBarLayoutBehavior</string>
     <string name="ScrollingAppBarLayoutBehavior" translatable="false">com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.ScrollingAppBarLayoutBehavior</string>
     <string name="ShrinkBehavior" translatable="false">com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.ShrinkBehavior</string>
+
+    <string name="consume_touch_events">CONSUME</string>
 </resources>
