@@ -1,7 +1,6 @@
 package com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors
 
 import android.content.Context
-import android.os.Build
 import android.os.Parcelable
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.BottomSheetBehavior
@@ -10,7 +9,6 @@ import android.support.v7.widget.Toolbar
 import android.util.AttributeSet
 import android.view.View
 import com.u1f4f1.powerbottomsheet.R
-import com.u1f4f1.powerbottomsheet.debug
 import com.u1f4f1.powerbottomsheet.warn
 
 /**
@@ -28,8 +26,7 @@ import com.u1f4f1.powerbottomsheet.warn
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet?) : CoordinatorLayout.Behavior<V>(context,
-        attrs) {
+class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet?) : CoordinatorLayout.Behavior<V>(context, attrs) {
     var peekHeight = 300
     var anchorPointY = 600
     var currentChildY = 0
@@ -104,8 +101,6 @@ class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet
 
         drawable.setBounds(0, (bounds.bottom - bounds.bottom * heightRate).toInt(), bounds.right, bounds.bottom)
         child.background = drawable
-
-        debug("rate: $rate, currentChildY: $currentChildY, bounds: $bounds, heightRate: $heightRate")
 
         return true
     }
