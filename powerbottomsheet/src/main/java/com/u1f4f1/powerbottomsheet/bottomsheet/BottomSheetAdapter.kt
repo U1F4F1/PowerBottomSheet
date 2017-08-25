@@ -13,12 +13,12 @@ import java.util.concurrent.LinkedBlockingDeque
 
 abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*>?) : EpoxyAdapter() {
     val updates = LinkedBlockingDeque<Runnable>()
-    lateinit var recyclerViewTransitionRunnable: Runnable
+    protected lateinit var recyclerViewTransitionRunnable: Runnable
 
     init {
         val onBottomSheetStateChanged = object : AnchorPointBottomSheetBehavior.BottomSheetStateCallback {
             override fun onStateChanged(bottomSheet: View, newState: BottomSheetState) {
-                for (i in 0..updates.size - 1) {
+                for (i in 0 until updates.size) {
                     updates.pop()?.run()
                 }
             }
@@ -27,19 +27,8 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
         behavior?.addBottomSheetStateCallback(onBottomSheetStateChanged)
     }
 
-    override fun notifyModelChanged(model: EpoxyModel<*>?) {
-        if (!(behavior?.isStable ?: false)) {
-            updates.add(Runnable {
-                super.notifyModelChanged(model)
-            })
-            return
-        }
-
-        super.notifyModelChanged(model)
-    }
-
     override fun notifyModelsChanged() {
-        if (!(behavior?.isStable ?: false)) {
+        if (behavior?.isStable != true) {
             updates.add(Runnable {
                 super.notifyModelsChanged()
             })
@@ -54,11 +43,10 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
         super.onAttachedToRecyclerView(recyclerView)
 
         trace("BottomSheetAdapter.onAttachedToRecyclerView(recyclerView: RecyclerView?)")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            recyclerViewTransitionRunnable = Runnable { TransitionManager.beginDelayedTransition(recyclerView) }
+        recyclerViewTransitionRunnable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Runnable { TransitionManager.beginDelayedTransition(recyclerView) }
         } else {
-            // I would rather invoke an empty lambda than have to check for null everywhere
-            recyclerViewTransitionRunnable = Runnable { }
+            Runnable { /* no op */ }
         }
     }
 }

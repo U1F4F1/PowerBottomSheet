@@ -1,138 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-       xmlns:app="http://schemas.android.com/apk/res-auto"
-       xmlns:tools="http://schemas.android.com/tools">
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        >
+        android:padding="8dp">
 
         <TextView
-            android:id="@+id/poi_name"
-            android:layout_width="0dp"
+            android:id="@+id/header_text"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:maxLines="2"
-            android:singleLine="true"
-            android:textColor="#000000"
-            android:textSize="18sp"
+            android:text="THIS IS WHAT I'VE GOT"
+            android:textSize="24sp"
+            android:layout_marginRight="8dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginLeft="8dp"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:layout_constraintLeft_creator="1"
-            tools:text="Motel 6 - Minneapolis - Brooklyn Center"/>
-
-        <ProgressBar
-            android:id="@+id/progressBarTop"
-            app:layout_constraintLeft_toLeftOf="@+id/poi_name"
-            app:layout_constraintTop_toBottomOf="@+id/poi_name"
-            app:layout_constraintLeft_toRightOf="@+id/poi_hours_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
-            />
-
-        <TextView
-            android:id="@+id/poi_address_line1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:textSize="14sp"
-            app:layout_constraintLeft_toLeftOf="@+id/poi_name"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_constraintLeft_creator="1"
-            tools:layout_constraintTop_creator="1"
-            tools:text="1422 Lake St"
-            />
-
-        <TextView
-            android:id="@+id/poi_address_line2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textSize="12sp"
-            app:layout_constraintLeft_toLeftOf="@+id/poi_address_line1"
-            app:layout_constraintTop_toBottomOf="@+id/poi_address_line1"
-            tools:layout_constraintLeft_creator="1"
-            tools:layout_constraintTop_creator="1"
-            tools:text="Minneapolis, MN 55408"
-            />
-
-        <TextView
-            android:id="@+id/poi_distance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="24dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="32dp"
-            android:textSize="14sp"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintLeft_toRightOf="@+id/poi_address_line1"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_constraintRight_creator="1"
-            tools:layout_constraintTop_creator="1"
-            tools:text="17mi"/>
-
-        <ImageView
-            android:id="@+id/poi_hours_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            app:layout_constraintLeft_toLeftOf="@+id/poi_address_line2"
-            app:layout_constraintTop_toBottomOf="@+id/poi_address_line2"
-            app:srcCompat="@drawable/ic_clock"
-            tools:layout_constraintLeft_creator="1"
-            tools:layout_constraintTop_creator="1"/>
-
-        <TextView
-            android:id="@+id/poi_hours_open"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="2dp"
-            android:gravity="center_vertical"
-            android:paddingBottom="@dimen/default_padding_quarter"
-            android:paddingTop="@dimen/default_padding_quarter"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintLeft_toRightOf="@+id/poi_hours_clock"
-            app:layout_constraintTop_toBottomOf="@+id/poi_address_line2"
-            tools:layout_constraintLeft_creator="1"
-            tools:layout_constraintTop_creator="1"
-            tools:text="Open: "/>
-
-        <TextView
-            android:id="@+id/poi_hours"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="2dp"
-            android:gravity="center_vertical"
-            android:paddingBottom="@dimen/default_padding_quarter"
-            android:paddingTop="@dimen/default_padding_quarter"
-            android:textSize="12sp"
-            app:layout_constraintLeft_toRightOf="@+id/poi_hours_open"
-            app:layout_constraintTop_toBottomOf="@+id/poi_address_line2"
-            tools:layout_constraintLeft_creator="1"
-            tools:layout_constraintTop_creator="1"
-            tools:text="2pm to 8pm"/>
-
-        <ImageView
-            android:id="@+id/arrow_drawable"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            app:srcCompat="@drawable/ic_arrow_down_black_24px"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toRightOf="parent"
-            app:layout_constraintRight_toLeftOf="parent"
-            />
+            android:layout_marginBottom="8dp"/>
 
     </android.support.constraint.ConstraintLayout>
 </merge>

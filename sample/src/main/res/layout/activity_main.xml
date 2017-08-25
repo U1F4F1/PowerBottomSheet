@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:elevation="0dp"
-        android:text="Show bottomsheet"
+        android:text="Show me what you got"
         />
 
     <com.u1f4f1.sample.SampleBottomSheet
@@ -23,7 +23,7 @@
         app:layout_anchorGravity="bottom|start|left"
         app:anchorPoint="@dimen/anchor_point"
         app:logLevel="2"
-        android:background="@color/colorPrimaryDark"
+        android:background="@android:color/transparent"
         android:elevation="8dp"
         app:behavior_hideable="true"
         app:behavior_peekHeight="@dimen/bottom_sheet_peek_height"
@@ -40,36 +40,14 @@
         android:scaleType="centerCrop"
         android:fitsSystemWindows="true"
         app:layout_behavior="@string/BackDropBottomSheetBehavior"
-        android:src="@drawable/doggo"
+        android:src="@drawable/show_me_what_you_got"
         />
 
-    <!-- choose filters fab -->
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/filters_fab"
-        android:layout_marginBottom="@dimen/default_margin_double"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_close_black_24dp"
-        app:layout_behavior="@string/ShrinkBehavior"
-        android:layout_gravity="bottom|start"/>
-
-    <!-- choose layers fab -->
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/layers_fab"
-        android:layout_marginBottom="104dp"
-        android:src="@drawable/ic_close_black_24dp"
-        app:layout_behavior="@string/ShrinkBehavior"
-        android:layout_gravity="bottom|start"/>
-
-    <!-- my location fab -->
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/track_location_fab"
-        android:layout_marginBottom="@dimen/default_margin_double"
-        android:src="@drawable/ic_close_black_24dp"
+        android:src="@drawable/ic_done_white_48dp"
+        android:layout_margin="@dimen/default_margin_double"
         app:layout_behavior="@string/ShrinkBehavior"
         android:layout_gravity="bottom|end"/>
 
@@ -88,6 +66,7 @@
             android:layout_gravity="end"
             android:tag="@string/consume_touch_events"
             android:elevation="16dp"
+            android:src="@drawable/head"
             android:layout_margin="@dimen/fab_margin"
             android:clickable="true"
             />
@@ -100,6 +79,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:theme="@style/AppTheme.AppBarOverlay"
+        android:elevation="16dp"
         app:title="Sample"
         app:layout_behavior="@string/MergedAppBarLayoutBehavior">
 
@@ -107,6 +87,7 @@
             android:id="@+id/merged_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:elevation="16dp"
             app:navigationIcon="@drawable/ic_close_black_24dp"/>
 
     </android.support.design.widget.AppBarLayout>

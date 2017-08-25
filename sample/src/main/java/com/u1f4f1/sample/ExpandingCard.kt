@@ -1,12 +1,17 @@
 package com.u1f4f1.sample
 
 import android.content.Context
+import android.support.annotation.Nullable
 import android.support.v7.widget.CardView
 import android.util.AttributeSet
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageView
-import kotlinx.android.synthetic.main.hours_card.view.*
+import com.airbnb.epoxy.ModelProp
+import com.airbnb.epoxy.ModelView
+import kotlinx.android.synthetic.main.expanding_card.view.*
+import com.airbnb.epoxy.CallbackProp
+import com.u1f4f1.sample.R.id.expanding_container
+import com.u1f4f1.sample.R.id.status_header_arrow
+
 
 /**
  * Base class designed to handle expanding and collapsing [CardView]
@@ -14,25 +19,23 @@ import kotlinx.android.synthetic.main.hours_card.view.*
  * Subclasses must have a layout that includes a [R.id.status_header_arrow]
  * and a [R.id.expanding_container]
  */
-abstract class ExpandingCard : CardView {
-    internal var isExpanded = false
+@ModelView(defaultLayout = R.layout.model_expanding)
+class ExpandingCard(context: Context, attrs: AttributeSet?) : CardView(context, attrs) {
+    private var isExpanded = false
+    private var delayedTransitionRunnable: Runnable? = null
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        inflateLayout(context, attrs)
+    init {
+        View.inflate(context, R.layout.expanding_card, this)
+
+        this.setOnClickListener {
+            cardClicked()
+        }
     }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        inflateLayout(context, attrs)
+    @CallbackProp
+    fun setDelayedTransitionRunnable(@Nullable runnable: Runnable?) {
+        this.delayedTransitionRunnable = runnable
     }
-
-    /**
-     * This will be called from each constructor in this base class.
-     * This must call [butterknife.ButterKnife.bind] after inflating the required layout.
-     *
-     * @param context the context used to inflate the layout
-     * @param attrs any attributes passed to views
-     */
-    abstract fun inflateLayout(context: Context, attrs: AttributeSet?)
 
     fun cardClicked() {
         val stateSet = intArrayOf(android.R.attr.state_checked * if (isExpanded) -1 else 1)
@@ -44,6 +47,7 @@ abstract class ExpandingCard : CardView {
             status_header_arrow.setImageState(stateSet, true)
             expandCard()
         }
+        delayedTransitionRunnable?.run()
     }
 
     fun collapseCard() {

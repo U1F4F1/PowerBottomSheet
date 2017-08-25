@@ -26,20 +26,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val activeColor = ContextCompat.getColor(this, R.color.colorAccent)
-        val inactiveColor = ContextCompat.getColor(this, R.color.colorPrimaryDark)
-
         bottomSheet = findViewById(R.id.bottom_sheet)
 
         bottomSheetBehavior = AnchorPointBottomSheetBehavior.from<View>(bottomSheet!!)
 
         bottomSheet!!.setActivatedListener(object : AnchorPointBottomSheetBehavior.OnSheetActivatedListener {
             override fun isActivated(isActive: Boolean) {
-                if (isActive) {
-                    bottomSheet!!.setBackgroundColor(activeColor)
-                } else {
-                    bottomSheet!!.setBackgroundColor(inactiveColor)
-                }
+                sampleAdapter?.activateHeader(isActive)
             }
         })
 
@@ -55,8 +48,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         bottomSheet!!.setState(BottomSheetState.STATE_COLLAPSED)
-
-        bottomSheet!!.postDelayed({ sampleAdapter!!.dataLoaded() }, 400)
     }
 
     override fun onBackPressed() {

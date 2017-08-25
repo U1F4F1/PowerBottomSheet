@@ -1,10 +1,7 @@
 package com.u1f4f1.sample
 
-import com.mooveit.library.Fakeit
 import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetAdapter
 import com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
-import com.u1f4f1.powerbottomsheet.debug
-import java.util.*
 
 class SampleAdapter(behavior: AnchorPointBottomSheetBehavior<*>?) : BottomSheetAdapter(behavior) {
 
@@ -14,22 +11,12 @@ class SampleAdapter(behavior: AnchorPointBottomSheetBehavior<*>?) : BottomSheetA
         addModel(headerModel)
 
         for (i in 0..10) {
-            addModel(
-                    RatingModel_()
-                            .buttonClickConsumer { Runnable {  } }
-                            .rating(Random(System.currentTimeMillis()).nextFloat())
-                            .text(Fakeit.rickAndMorty().quote())
-            )
-        }
-
-        for (i in 0..10) {
-            addModel(HoursModel_().buttonClickConsumer { Runnable { } })
+            addModel(ExpandingCardModel_().delayedTransitionRunnable { recyclerViewTransitionRunnable.run() })
         }
     }
 
-    fun dataLoaded() {
-        headerModel.finishedLoading()
+    fun activateHeader(activate: Boolean) {
+        headerModel.active = activate
         notifyModelChanged(headerModel)
-        debug("data loaded")
     }
 }

@@ -35,46 +35,11 @@ class HeaderView(context: Context, attrs: AttributeSet) : CardView(context, attr
         a.recycle()
     }
 
-    fun hideProgressBar() {
-        progressBarTop.visibility = View.GONE
-    }
-
-    fun setPoiName(poiName: String?) {
-        poi_name.text = poiName
-    }
-
-    fun setPoiHoursText() {
-        poi_hours.text = context.getString(R.string.always_open)
-        poi_hours.visibility = View.VISIBLE
-        poi_hours_open.visibility = View.VISIBLE
-        poi_hours_clock.visibility = View.VISIBLE
-    }
-
-    fun setPoiAddress1(address: String?) {
-        poi_address_line1.text = address
-    }
-
-    fun setPoiAddress2(address2: String?) {
-        poi_address_line2.text = address2
-    }
-
-    fun setPoiDistance(distance: String?) {
-        poi_distance.text = distance
-    }
-
     fun activate() {
         if (active) return
 
         setBackgroundColor(activeBackgroundColor)
-
-        poi_name.setTextColor(activeTextColor)
-        poi_hours_open.setTextColor(activeTextColor)
-        poi_hours.setTextColor(activeTextColor)
-        poi_distance.setTextColor(activeTextColor)
-        poi_address_line1.setTextColor(activeTextColor)
-        poi_address_line2.setTextColor(activeTextColor)
-
-        poi_hours_clock.setColorFilter(activeTextColor)
+        header_text.setTextColor(activeTextColor)
 
         active = true
     }
@@ -83,14 +48,7 @@ class HeaderView(context: Context, attrs: AttributeSet) : CardView(context, attr
         if (!active) return
 
         setBackgroundColor(inactiveBackgroundColor)
-        poi_name.setTextColor(inactiveTextColorSecondary)
-        poi_hours_open.setTextColor(inactiveTextColor)
-        poi_hours.setTextColor(inactiveTextColor)
-        poi_distance.setTextColor(inactiveTextColor)
-        poi_address_line1.setTextColor(inactiveTextColor)
-        poi_address_line2.setTextColor(inactiveTextColor)
-
-        poi_hours_clock.setColorFilter(inactiveTextColor)
+        header_text.setTextColor(inactiveTextColor)
 
         active = false
     }
