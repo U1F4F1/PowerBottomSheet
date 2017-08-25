@@ -37,6 +37,7 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:elevation="4dp"
+        android:scaleType="centerCrop"
         android:fitsSystemWindows="true"
         app:layout_behavior="@string/BackDropBottomSheetBehavior"
         android:src="@drawable/doggo"

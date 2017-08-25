@@ -21,14 +21,12 @@ package com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors
 import android.content.Context
 import android.support.design.widget.CoordinatorLayout
 import android.support.v4.view.GestureDetectorCompat
-import android.support.v4.view.MotionEventCompat
 import android.support.v4.view.ViewCompat
 import android.support.v4.widget.ViewDragHelper
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.View
-import android.view.ViewConfiguration
 import com.kylealanr.gesturedetectors.GestureDetectors
 import com.u1f4f1.powerbottomsheet.R
 import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetState
@@ -58,8 +56,6 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
 
         a.recycle()
 
-        val configuration = ViewConfiguration.get(context)
-
         gestureDetectorCompat = GestureDetectorCompat(context,
                 GestureDetectors.OnSingleTapUp{ this.handleOnSingleTapUp(it) })
     }
@@ -78,11 +74,11 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
 
     override fun onLayoutChild(parent: CoordinatorLayout, child: V, layoutDirection: Int): Boolean {
         if (ViewCompat.getFitsSystemWindows(parent) && !ViewCompat.getFitsSystemWindows(child)) {
-            ViewCompat.setFitsSystemWindows(child, true)
+            child.setFitsSystemWindows(true)
         }
-        val savedTop = child!!.top
+        val savedTop = child.top
         // First let the parent lay it out
-        parent!!.onLayoutChild(child, layoutDirection)
+        parent.onLayoutChild(child, layoutDirection)
         // Offset the bottom sheet
         parentHeight = parent.height
         val peekHeight: Int = this.peekHeight
@@ -115,7 +111,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
             ignoreEvents = true
             return false
         }
-        val action = MotionEventCompat.getActionMasked(event)
+        val action = event.actionMasked
         // Record the velocity
         if (action == MotionEvent.ACTION_DOWN) {
             reset()
@@ -138,11 +134,11 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
                 val initialX = event.x.toInt()
                 initialY = event.y.toInt()
                 val scroll = nestedScrollingChildRef?.get()
-                if (scroll != null && parent!!.isPointInChildBounds(scroll, initialX, initialY)) {
+                if (scroll != null && parent.isPointInChildBounds(scroll, initialX, initialY)) {
                     activePointerId = event.getPointerId(event.actionIndex)
                     touchingScrollingChild = true
                 }
-                ignoreEvents = activePointerId == MotionEvent.INVALID_POINTER_ID && !parent!!.isPointInChildBounds(child, initialX, initialY)
+                ignoreEvents = activePointerId == MotionEvent.INVALID_POINTER_ID && !parent.isPointInChildBounds(child, initialX, initialY)
             }
         }
         if (!ignoreEvents && viewDragHelper!!.shouldInterceptTouchEvent(event)) {
@@ -154,7 +150,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
         val scroll = nestedScrollingChildRef?.get()
         return action == MotionEvent.ACTION_MOVE && scroll != null &&
                 !ignoreEvents && state != BottomSheetState.STATE_DRAGGING &&
-                !parent!!.isPointInChildBounds(scroll, event.x.toInt(), event.y.toInt()) &&
+                !parent.isPointInChildBounds(scroll, event.x.toInt(), event.y.toInt()) &&
                 Math.abs(initialY - event.y) > viewDragHelper!!.touchSlop
     }
 
@@ -178,7 +174,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
                 setStateInternal(BottomSheetState.STATE_DRAGGING)
             }
         } else if (dy < 0) { // Downward
-            if (!ViewCompat.canScrollVertically(target, -1)) {
+            if (!target.canScrollVertically(-1)) {
                 if (newTop <= maxOffset || isHideable) {
                     consumed[1] = dy
                     ViewCompat.offsetTopAndBottom(child, -dy)
@@ -195,7 +191,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
         nestedScrolled = true
     }
 
-    override fun onStopNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View) {
+    override fun onStopNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View, type: Int) {
         if (child.top == minOffset) {
             setStateInternal(BottomSheetState.STATE_EXPANDED)
             return

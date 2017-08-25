@@ -55,7 +55,7 @@ class TabletAnchorPointBottomSheetBehavior<V : View>(context: Context, attrs: At
                 setStateInternal(BottomSheetState.STATE_DRAGGING)
             }
         } else if (dy < 0) { // Downward
-            if (!ViewCompat.canScrollVertically(target, -1)) {
+            if (!target.canScrollVertically(-1)) {
                 if (newTop <= maxOffset || isHideable) {
                     consumed[1] = dy
                     ViewCompat.offsetTopAndBottom(child, -dy)

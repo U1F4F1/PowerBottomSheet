@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:app="http://schemas.android.com/apk/res-auto"
+       xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <RelativeLayout
+            android:id="@+id/status_header"
+            android:layout_width="match_parent"
+            android:layout_height="48sp">
+
+            <TextView
+                android:id="@+id/status_header_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_toEndOf="@id/status_header_icon"
+                android:layout_toRightOf="@id/status_header_icon"
+                android:text="Your Review"/>
+
+            <View
+                android:id="@+id/card_divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@id/status_header_label"
+                android:layout_marginTop="@dimen/default_padding_half"
+                android:background="@color/colorPrimary"
+                />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rating_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RatingBar
+                android:id="@+id/rating_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:paddingTop="@dimen/default_padding"
+                android:numStars="5"
+                android:stepSize="1.0"
+                />
+
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@+id/expanding_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/black"
+                />
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/review_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/default_margin"
+                    android:layout_marginRight="@dimen/default_margin"
+                    android:lines="4"
+                    android:hint="Write a review"
+                    tools:text="Tables turned, lesson learned, my best look
+You jumped sides on me, now you 'bout to meet Westbrook
+Go celebrate with your team and let victory vouch you
+Just know, the next game played I might slap the shit out you
+Technical foul, I'm flagrant, I'm foul
+They throwin' me out, you throw in the towel"
+                    android:textSize="12sp"/>
+
+                <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
+                    android:id="@+id/update_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignEnd="@id/review_input"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignRight="@id/review_input"
+                    android:layout_below="@id/review_input"
+                    android:layout_marginEnd="@dimen/default_margin"
+                    android:layout_marginRight="@dimen/default_margin"
+                    android:layout_marginTop="@dimen/default_margin_half"
+                    android:layout_marginBottom="@dimen/default_margin"
+                    android:background="@color/colorPrimary"
+                    android:textColor="@color/white"
+                    android:text="Submit"
+                    app:initialCornerAngle="4dp"
+                    app:spinning_bar_padding="4dp"
+                    app:spinning_bar_color="@color/white"
+                    />
+
+            </RelativeLayout>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</merge>

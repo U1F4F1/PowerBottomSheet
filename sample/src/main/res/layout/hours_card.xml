@@ -45,8 +45,8 @@
                 android:layout_centerVertical="true"
                 android:paddingEnd="@dimen/default_padding"
                 android:paddingStart="@dimen/default_padding"
-                android:tint="@color/md_black_1000"
-                app:srcCompat="@drawable/expandcollapse_arrow_animatedselector"/>
+                android:tint="@color/black"
+                app:srcCompat="@drawable/ic_arrow_down_black_24px"/>
 
             <View
                 android:id="@+id/card_divider"
@@ -54,7 +54,7 @@
                 android:layout_height="1dp"
                 android:layout_below="@id/status_header_icon"
                 android:layout_marginTop="@dimen/default_padding_half"
-                android:background="@color/divider_color"
+                android:background="@color/black"
                 />
 
         </RelativeLayout>
