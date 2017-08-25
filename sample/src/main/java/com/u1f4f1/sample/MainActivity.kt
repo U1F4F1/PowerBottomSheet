@@ -44,7 +44,9 @@ class MainActivity : AppCompatActivity() {
             sampleAdapter = SampleAdapter(bottomSheetBehavior)
 
             bottomSheet!!.setupRecyclerview(sampleAdapter!!)
-            sampleAdapter!!.addFakeViews()
+            sampleAdapter!!.addHeader()
+
+            bottomSheet!!.postOnNextStableState(Runnable{ sampleAdapter!!.addFakeViews() })
         }
 
         bottomSheet!!.setState(BottomSheetState.STATE_COLLAPSED)

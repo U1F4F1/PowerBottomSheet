@@ -11,7 +11,6 @@ import android.util.AttributeSet
 import android.view.View
 import com.u1f4f1.powerbottomsheet.R
 import com.u1f4f1.powerbottomsheet.debug
-import com.u1f4f1.powerbottomsheet.trace
 import com.u1f4f1.powerbottomsheet.warn
 
 /**
@@ -63,7 +62,7 @@ class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet
         anchorPointY = parent.height - anchorPoint
 
         if (child is AppBarLayout) {
-            (0..child.childCount - 1).map {
+            (0 until child.childCount).map {
                 child.getChildAt(it)
             }.find {
                 it is Toolbar
@@ -91,12 +90,10 @@ class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet
         val bounds = drawable.bounds
         var heightRate = (bounds.bottom * 2 - dependency.y) / (bounds.bottom) - 1f
 
-        heightRate = if (heightRate > 1f) {
-            1f
-        } else if (heightRate < 0f) {
-            0f
-        } else {
-            heightRate
+        heightRate = when {
+            heightRate > 1f -> 1f
+            heightRate < 0f -> 0f
+            else -> heightRate
         }
 
         if (heightRate >= 1f) {
@@ -107,11 +104,6 @@ class MergedAppBarLayoutBehavior<V : View>(context: Context, attrs: AttributeSet
 
         drawable.setBounds(0, (bounds.bottom - bounds.bottom * heightRate).toInt(), bounds.right, bounds.bottom)
         child.background = drawable
-
-        val fullyExpanded = heightRate == 1f
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            child.elevation = if (fullyExpanded) 8f else 0f
-        }
 
         debug("rate: $rate, currentChildY: $currentChildY, bounds: $bounds, heightRate: $heightRate")
 

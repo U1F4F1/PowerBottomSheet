@@ -79,8 +79,11 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:theme="@style/AppTheme.AppBarOverlay"
+        android:stateListAnimator="@null"
+        app:title="THIS IS WHAT I'VE GOT"
         android:elevation="16dp"
-        app:title="Sample"
+        app:behavior_peekHeight="@dimen/bottom_sheet_peek_height"
+        app:anchorPoint="@dimen/anchor_point"
         app:layout_behavior="@string/MergedAppBarLayoutBehavior">
 
         <android.support.v7.widget.Toolbar
@@ -88,7 +91,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:elevation="16dp"
-            app:navigationIcon="@drawable/ic_close_black_24dp"/>
+            app:navigationIcon="@drawable/ic_close_24dp"/>
 
     </android.support.design.widget.AppBarLayout>
 </android.support.design.widget.CoordinatorLayout>

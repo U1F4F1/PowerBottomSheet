@@ -5,20 +5,10 @@ import android.support.annotation.Nullable
 import android.support.v7.widget.CardView
 import android.util.AttributeSet
 import android.view.View
-import com.airbnb.epoxy.ModelProp
+import com.airbnb.epoxy.CallbackProp
 import com.airbnb.epoxy.ModelView
 import kotlinx.android.synthetic.main.expanding_card.view.*
-import com.airbnb.epoxy.CallbackProp
-import com.u1f4f1.sample.R.id.expanding_container
-import com.u1f4f1.sample.R.id.status_header_arrow
 
-
-/**
- * Base class designed to handle expanding and collapsing [CardView]
- *
- * Subclasses must have a layout that includes a [R.id.status_header_arrow]
- * and a [R.id.expanding_container]
- */
 @ModelView(defaultLayout = R.layout.model_expanding)
 class ExpandingCard(context: Context, attrs: AttributeSet?) : CardView(context, attrs) {
     private var isExpanded = false

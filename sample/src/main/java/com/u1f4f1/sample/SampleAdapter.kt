@@ -1,5 +1,6 @@
 package com.u1f4f1.sample
 
+import com.mooveit.library.Fakeit
 import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetAdapter
 import com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomSheetBehavior
 
@@ -7,11 +8,13 @@ class SampleAdapter(behavior: AnchorPointBottomSheetBehavior<*>?) : BottomSheetA
 
     val headerModel = HeaderModel_()
 
-    fun addFakeViews() {
-        addModel(headerModel)
+    fun addHeader() = addModel(headerModel)
 
-        for (i in 0..10) {
-            addModel(ExpandingCardModel_().delayedTransitionRunnable { recyclerViewTransitionRunnable.run() })
+    fun addFakeViews() {
+        addModel(ExpandingCardModel_().delayedTransitionRunnable { recyclerViewTransitionRunnable.run() })
+
+        for (i in 0..20) {
+            addModel(QuoteCardModel_().quote(Fakeit.rickAndMorty().quote()).attribution(Fakeit.rickAndMorty().character()))
         }
     }
 

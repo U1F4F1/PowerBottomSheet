@@ -782,32 +782,38 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         // attempt to snap to the right state with the current y velocity, but fall back to the
         // last movement by percentage of the screen
-        if (yVelocity < -150) {
-            // snap up
-            trace("velocity %s snapping up", yVelocity)
-            if (lockedToCollapsed) {
-                targetState = BottomSheetState.STATE_COLLAPSED
-            } else {
-                targetState = getNextStableState(lastStableState)
-            }
-        } else if (yVelocity > 150) {
-            //snap down
-            trace("velocity %s snapping down", yVelocity)
-            targetState = getPreviousStableState(lastStableState)
-        } else {
-            if (percentage > 0.01) {
+        when {
+            yVelocity < -150 -> {
                 // snap up
-                trace("percentage moved %s snapping up", percentage)
-                targetState = getNextStableState(lastStableState)
-            } else if (percentage < -0.01) {
+                trace("velocity %s snapping up", yVelocity)
+                targetState = if (lockedToCollapsed) {
+                    BottomSheetState.STATE_COLLAPSED
+                } else {
+                    getNextStableState(lastStableState)
+                }
+            }
+            yVelocity > 150 -> {
                 //snap down
-                trace("percentage moved %s snapping down", percentage)
+                trace("velocity %s snapping down", yVelocity)
                 targetState = getPreviousStableState(lastStableState)
-            } else {
-                // eventually fall all the way back to the last state if velocity is 0 and the
-                // touch event only moved a small amount
-                trace("snapping to last stable state")
-                targetState = lastStableState
+            }
+            else -> targetState = when {
+                percentage > 0.1 -> {
+                    // snap up
+                    trace("percentage moved %s snapping up", percentage)
+                    getNextStableState(lastStableState)
+                }
+                percentage < -0.1 -> {
+                    //snap down
+                    trace("percentage moved %s snapping down", percentage)
+                    getPreviousStableState(lastStableState)
+                }
+                else -> {
+                    // eventually fall all the way back to the last state if velocity is 0 and the
+                    // touch event only moved a small amount
+                    trace("snapping to last stable state")
+                    lastStableState
+                }
             }
         }
 
