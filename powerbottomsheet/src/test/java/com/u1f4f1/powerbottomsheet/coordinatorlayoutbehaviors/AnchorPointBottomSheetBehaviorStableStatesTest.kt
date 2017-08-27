@@ -128,8 +128,42 @@ class AnchorPointBottomSheetBehaviorTopForState(val input: BottomSheetState, val
 
     @Test
     fun isTopCorrect() {
-
-
         behavior.getTopForState(input) shouldEqual expected
+    }
+}
+
+@RunWith(Parameterized::class)
+class AnchorPointBottomSheetBehaviorClosestStableState(val top: Int, val expected: BottomSheetState) {
+    lateinit var behavior: AnchorPointBottomSheetBehavior<View>
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "the closest stable state to {0} is {1}")
+        fun data(): Collection<Array<Any>> {
+            return listOf(
+                    arrayOf(1920, BottomSheetState.STATE_HIDDEN),
+                    arrayOf(1900, BottomSheetState.STATE_HIDDEN),
+                    arrayOf(1800, BottomSheetState.STATE_COLLAPSED),
+                    arrayOf(1750, BottomSheetState.STATE_COLLAPSED),
+                    arrayOf(1000, BottomSheetState.STATE_ANCHOR_POINT),
+                    arrayOf(0, BottomSheetState.STATE_EXPANDED),
+                    arrayOf(-1, BottomSheetState.STATE_DRAGGING),
+                    arrayOf(-1, BottomSheetState.STATE_SETTLING)
+            )
+        }
+    }
+
+    @Before
+    fun setup() {
+        behavior = AnchorPointBottomSheetBehavior()
+        behavior.parentHeight = 100
+        behavior.maxOffset = 200
+        behavior.anchorPoint = 666
+        behavior.minOffset = 300
+    }
+
+    @Test
+    fun closestStateIsCorrect() {
+        behavior.getClosestState(top) shouldEqual expected
     }
 }

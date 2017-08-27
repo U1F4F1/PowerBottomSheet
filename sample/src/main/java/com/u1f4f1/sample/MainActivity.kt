@@ -12,7 +12,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
 import android.support.v7.app.AppCompatDelegate
-
+import com.u1f4f1.powerbottomsheet.trace
 
 
 class MainActivity : AppCompatActivity() {
@@ -55,16 +55,17 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if (bottomSheetBehavior?.state === BottomSheetState.STATE_EXPANDED || bottomSheetBehavior?.state === BottomSheetState.STATE_ANCHOR_POINT) {
             bottomSheetBehavior?.state = BottomSheetState.STATE_COLLAPSED
+            bottomSheetBehavior!!.reset()
+            bottomSheet?.reset()
+            trace("onBackPressed collapsing sheet")
             return
         }
 
         if (bottomSheetBehavior?.state === BottomSheetState.STATE_COLLAPSED) {
             bottomSheetBehavior?.state = BottomSheetState.STATE_HIDDEN
-            return
-        }
-
-        if (bottomSheetBehavior?.state === BottomSheetState.STATE_HIDDEN) {
-            bottomSheetBehavior?.state = BottomSheetState.STATE_COLLAPSED
+            bottomSheetBehavior!!.reset()
+            bottomSheet?.reset()
+            trace("onBackPressed hiding sheet")
             return
         }
 

@@ -38,6 +38,7 @@ import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheet
 import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.powerbottomsheet.bottomsheet.SavedState
 import java.lang.ref.WeakReference
+import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
 
@@ -303,6 +304,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     // tracks velocity from $CALL_SITE
     internal val yVelocity: Float
         get() {
+            if (velocityTracker == null) return 0f
+
             velocityTracker!!.computeCurrentVelocity(1000, maximumVelocity)
             return velocityTracker!!.getYVelocity(activePointerId)
         }
@@ -330,11 +333,12 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
     }
 
-    internal fun reset() {
+    fun reset() {
+        trace("resetting AnchorPointBottomSheet velocity and pointer")
         activePointerId = ViewDragHelper.INVALID_POINTER
         if (velocityTracker != null) {
             velocityTracker!!.recycle()
-            velocityTracker = null
+            velocityTracker = VelocityTracker.obtain()
         }
     }
 
@@ -428,10 +432,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         var a = context.obtainStyledAttributes(attrs, android.support.design.R.styleable.BottomSheetBehavior_Layout)
         val value = a.peekValue(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight)
-        if (value != null && value.data == PEEK_HEIGHT_AUTO) {
-            peekHeight = value.data
+        peekHeight = if (value != null && value.data == PEEK_HEIGHT_AUTO) {
+            value.data
         } else {
-            peekHeight = a.getDimensionPixelSize(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, PEEK_HEIGHT_AUTO)
+            a.getDimensionPixelSize(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, PEEK_HEIGHT_AUTO)
         }
 
         isHideable = a.getBoolean(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_hideable, false)
@@ -483,8 +487,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         if (state == BottomSheetState.STATE_COLLAPSED && !lockedToCollapsed) {
             trace("Tapping on Collapsed BottomSheet")
             if (viewRef!!.get() != null) {
-                (viewRef!!.get() as BottomSheet).isActivated = true
-                bottomSheetIsActive = true
+                attemptToActivateBottomsheet(viewRef!!.get() as View)
             }
             state = BottomSheetState.STATE_ANCHOR_POINT
             return true
@@ -568,6 +571,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onInterceptTouchEvent(parent: CoordinatorLayout, child: V, event: MotionEvent): Boolean {
+//        if (state == BottomSheetState.STATE_SETTLING) return true
+
         if (disableDragging && parent.isPointInChildBounds(child, event.x.toInt(), event.y.toInt())) {
             return true
         }
@@ -773,7 +778,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         // attempt to snap to the right state with the current y velocity, but fall back to the
         // last movement by percentage of the screen
         when {
-            yVelocity < -150 -> {
+            yVelocity < -50 -> {
                 // snap up
                 trace("velocity %s snapping up", yVelocity)
                 targetState = if (lockedToCollapsed) {
@@ -782,7 +787,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                     getNextStableState(lastStableState)
                 }
             }
-            yVelocity > 150 -> {
+            yVelocity > 50 -> {
                 //snap down
                 trace("velocity %s snapping down", yVelocity)
                 targetState = getPreviousStableState(lastStableState)
@@ -801,8 +806,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 else -> {
                     // eventually fall all the way back to the last state if velocity is 0 and the
                     // touch event only moved a small amount
-                    trace("snapping to last stable state")
-                    lastStableState
+                    trace("snapping to closest stable state")
+                    getClosestState(target as BottomSheet)
                 }
             }
         }
@@ -896,9 +901,31 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             }
             else -> {
                 debug("UNKNOWN_STATE top: %s", 0)
-                return 0
+                return -1
             }
         }
+    }
+
+    internal fun getClosestState(top: Int) : BottomSheetState {
+        info("getClosestState()")
+        return getListOfTopsSortedByDistance(top)
+                .first()
+                .first
+    }
+
+    internal fun getClosestState(bottomSheet: BottomSheet) : BottomSheetState =
+            getClosestState(bottomSheet.top)
+
+    internal fun getListOfTopsSortedByDistance(top: Int) : List<Pair<BottomSheetState, Int>> {
+        info("getListOfTopsSortedByDistance($top: Int)")
+        debug(Arrays.toString(getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { Math.abs(it.second - top) }.toTypedArray()))
+        return getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { Math.abs(it.second - top) }
+    }
+
+    internal fun getListOfTops() : List<Pair<BottomSheetState, Int>> {
+        info("getListOfTops()")
+        debug(Arrays.toString(BottomSheetState.values().map { Pair(it, getTopForState(it)) }.toTypedArray()))
+        return BottomSheetState.values().map { Pair(it, getTopForState(it)) }
     }
 
     protected fun attemptToActivateBottomsheet(view: View) {
