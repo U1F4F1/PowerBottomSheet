@@ -2,7 +2,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'de.mobilej.unmock'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'maven-publish'
+
+androidExtensions {
+    experimental = true
+}
 
 android {
     compileSdkVersion 26
@@ -11,7 +16,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 2
-        versionName "1.2"
+        versionName "1.5"
     }
     buildTypes {
         release {
@@ -60,7 +65,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.u1f4f1.powerbetterbottomsheet'
             artifactId 'powerbetterbottomsheet'
-            version '3.0'
+            version '1.5'
             artifact("$buildDir/outputs/aar/powerbottomsheet-release.aar")
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')

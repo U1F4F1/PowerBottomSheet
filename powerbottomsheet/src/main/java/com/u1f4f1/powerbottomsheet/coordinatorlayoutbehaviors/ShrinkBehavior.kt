@@ -9,7 +9,7 @@ import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheet
 
 class ShrinkBehavior(context: Context, attrs: AttributeSet) : CoordinatorLayout.Behavior<FloatingActionButton>(context, attrs) {
 
-    val viewsThatOverlapByClassName: MutableMap<String, Boolean> = mutableMapOf()
+    private val viewsThatOverlapByClassName: MutableMap<String, Boolean> = mutableMapOf()
 
     override fun layoutDependsOn(parent: CoordinatorLayout?, child: FloatingActionButton?, dependency: View?): Boolean {
         if (dependency is BottomSheet) viewsThatOverlapByClassName.put(BottomSheet::class.java.simpleName, false)
@@ -23,16 +23,17 @@ class ShrinkBehavior(context: Context, attrs: AttributeSet) : CoordinatorLayout.
                 dependency?.let {
                     val dependencies = parent.getDependencies(child)
 
-                    for (i in 0..dependencies.size - 1) {
-                        val view = dependencies[i] as? BottomSheet ?: continue
-
-                        if (parent.doViewsOverlap(child, view)) {
-                            viewsThatOverlapByClassName.put(view::class.java.simpleName, true)
-                            child.hide()
-                        } else {
-                            child.show()
-                        }
-                    }
+                    (0 until dependencies.size)
+                            .asSequence()
+                            .mapNotNull { dependencies[it] as? BottomSheet }
+                            .forEach {
+                                if (parent.doViewsOverlap(child, it)) {
+                                    viewsThatOverlapByClassName.put(it::class.java.simpleName, true)
+                                    child.hide()
+                                } else {
+                                    child.show()
+                                }
+                            }
                 }
             }
         }
@@ -40,7 +41,6 @@ class ShrinkBehavior(context: Context, attrs: AttributeSet) : CoordinatorLayout.
         return false
     }
 
-    private fun atLeastOneViewOverlapsTheFab(): Boolean {
-        return viewsThatOverlapByClassName.all { !it.value }
-    }
+    private fun atLeastOneViewOverlapsTheFab(): Boolean =
+            viewsThatOverlapByClassName.all { !it.value }
 }

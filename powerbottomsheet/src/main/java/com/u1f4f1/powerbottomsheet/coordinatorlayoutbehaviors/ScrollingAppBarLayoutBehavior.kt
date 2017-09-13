@@ -68,9 +68,8 @@ class ScrollingAppBarLayoutBehavior(private val context: Context, attrs: Attribu
     override fun onRestoreInstanceState(parent: CoordinatorLayout?, child: View?, state: Parcelable?) {
         if (state !is SavedState) return
 
-        val savedState = state
-        super.onRestoreInstanceState(parent, child, savedState.superState)
-        this.isVisible = savedState.isVisible
+        super.onRestoreInstanceState(parent, child, state.superState)
+        this.isVisible = state.isVisible
     }
 
     private fun init(parent: CoordinatorLayout, child: View, dependency: View): Boolean {
@@ -179,11 +178,11 @@ class ScrollingAppBarLayoutBehavior(private val context: Context, attrs: Attribu
         return null
     }
 
-    protected class SavedState : View.BaseSavedState {
+    private class SavedState : View.BaseSavedState {
 
         internal val isVisible: Boolean
 
-        constructor(source: Parcel) : super(source) {
+        constructor(source: Parcel) : super(source, SavedState::class.java.classLoader) {
             isVisible = source.readByte().toInt() != 0
         }
 
