@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("MemberVisibilityCanPrivate")
+
 package com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors
 
 import android.annotation.SuppressLint
@@ -23,7 +25,9 @@ import android.os.Parcelable
 import android.support.annotation.VisibleForTesting
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.CoordinatorLayout
-import android.support.v4.view.*
+import android.support.v4.view.GestureDetectorCompat
+import android.support.v4.view.NestedScrollingChild
+import android.support.v4.view.ViewCompat
 import android.support.v4.widget.ViewDragHelper
 import android.util.AttributeSet
 import android.util.SparseIntArray
@@ -34,13 +38,8 @@ import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheet
 import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.powerbottomsheet.bottomsheet.SavedState
 import java.lang.ref.WeakReference
+import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
-import android.icu.lang.UCharacter.GraphemeClusterBreak.V
-import android.text.method.Touch.onTouchEvent
-import android.icu.lang.UCharacter.GraphemeClusterBreak.V
-
-
-
 
 
 /**
@@ -195,23 +194,17 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             }
         }
 
-        override fun clampViewPositionVertical(child: View?, top: Int, dy: Int): Int {
-            return constrain(top, minOffset, if (isHideable) parentHeight else maxOffset)
-        }
+        override fun clampViewPositionVertical(child: View?, top: Int, dy: Int): Int = constrain(top, minOffset, if (isHideable) parentHeight else maxOffset)
 
-        internal fun constrain(amount: Int, low: Int, high: Int): Int {
-            return if (amount < low) low else if (amount > high) high else amount
-        }
+        internal fun constrain(amount: Int, low: Int, high: Int): Int = if (amount < low) low else if (amount > high) high else amount
 
-        override fun clampViewPositionHorizontal(child: View?, left: Int, dx: Int): Int {
-            return child!!.left
-        }
+        override fun clampViewPositionHorizontal(child: View?, left: Int, dx: Int): Int = child!!.left
 
         override fun getViewVerticalDragRange(child: View?): Int {
-            if (isHideable) {
-                return parentHeight - minOffset
+            return if (isHideable) {
+                parentHeight - minOffset
             } else {
-                return maxOffset - minOffset
+                maxOffset - minOffset
             }
         }
     }
@@ -272,12 +265,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
             field = value
 
-            if (isStateStable(value)) {
-                this.lastStableState = value
-            } else {
-                return
-            }
-
             if (viewRef == null) {
                 // The view is not laid out yet; modify state and let onLayoutChild handle it later
                 return
@@ -286,6 +273,12 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             val child = viewRef!!.get() ?: return
 
             attemptToActivateBottomsheet(child)
+
+            if (isStateStable(value)) {
+                this.lastStableState = value
+            } else {
+                return
+            }
 
             // Start the animation; wait until a pending layout if there is one.
             val parent = child.parent
@@ -311,6 +304,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     // tracks velocity from $CALL_SITE
     internal val yVelocity: Float
         get() {
+            if (velocityTracker == null) return 0f
+
             velocityTracker!!.computeCurrentVelocity(1000, maximumVelocity)
             return velocityTracker!!.getYVelocity(activePointerId)
         }
@@ -338,11 +333,12 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
     }
 
-    internal fun reset() {
+    fun reset() {
+        trace("resetting AnchorPointBottomSheet velocity and pointer")
         activePointerId = ViewDragHelper.INVALID_POINTER
         if (velocityTracker != null) {
             velocityTracker!!.recycle()
-            velocityTracker = null
+            velocityTracker = VelocityTracker.obtain()
         }
     }
 
@@ -436,10 +432,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         var a = context.obtainStyledAttributes(attrs, android.support.design.R.styleable.BottomSheetBehavior_Layout)
         val value = a.peekValue(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight)
-        if (value != null && value.data == PEEK_HEIGHT_AUTO) {
-            peekHeight = value.data
+        peekHeight = if (value != null && value.data == PEEK_HEIGHT_AUTO) {
+            value.data
         } else {
-            peekHeight = a.getDimensionPixelSize(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, PEEK_HEIGHT_AUTO)
+            a.getDimensionPixelSize(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, PEEK_HEIGHT_AUTO)
         }
 
         isHideable = a.getBoolean(android.support.design.R.styleable.BottomSheetBehavior_Layout_behavior_hideable, false)
@@ -491,8 +487,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         if (state == BottomSheetState.STATE_COLLAPSED && !lockedToCollapsed) {
             trace("Tapping on Collapsed BottomSheet")
             if (viewRef!!.get() != null) {
-                (viewRef!!.get() as BottomSheet).isActivated = true
-                bottomSheetIsActive = true
+                attemptToActivateBottomsheet(viewRef!!.get() as View)
             }
             state = BottomSheetState.STATE_ANCHOR_POINT
             return true
@@ -513,9 +508,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         return true
     }
 
-    internal fun targetViewIsChildOf(potentialChild: View, potentialParent: ViewGroup): Boolean {
-        return potentialChild.parent == potentialParent
-    }
+    internal fun targetViewIsChildOf(potentialChild: View, potentialParent: ViewGroup): Boolean = potentialChild.parent == potentialParent
 
     internal fun findScrollingChild(view: View): View? {
         if (view is NestedScrollingChild) {
@@ -578,6 +571,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onInterceptTouchEvent(parent: CoordinatorLayout, child: V, event: MotionEvent): Boolean {
+//        if (state == BottomSheetState.STATE_SETTLING) return true
+
         if (disableDragging && parent.isPointInChildBounds(child, event.x.toInt(), event.y.toInt())) {
             return true
         }
@@ -782,32 +777,38 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         // attempt to snap to the right state with the current y velocity, but fall back to the
         // last movement by percentage of the screen
-        if (yVelocity < -150) {
-            // snap up
-            trace("velocity %s snapping up", yVelocity)
-            if (lockedToCollapsed) {
-                targetState = BottomSheetState.STATE_COLLAPSED
-            } else {
-                targetState = getNextStableState(lastStableState)
-            }
-        } else if (yVelocity > 150) {
-            //snap down
-            trace("velocity %s snapping down", yVelocity)
-            targetState = getPreviousStableState(lastStableState)
-        } else {
-            if (percentage > 0.01) {
+        when {
+            yVelocity < -50 -> {
                 // snap up
-                trace("percentage moved %s snapping up", percentage)
-                targetState = getNextStableState(lastStableState)
-            } else if (percentage < -0.01) {
+                trace("velocity %s snapping up", yVelocity)
+                targetState = if (lockedToCollapsed) {
+                    BottomSheetState.STATE_COLLAPSED
+                } else {
+                    getNextStableState(lastStableState)
+                }
+            }
+            yVelocity > 50 -> {
                 //snap down
-                trace("percentage moved %s snapping down", percentage)
+                trace("velocity %s snapping down", yVelocity)
                 targetState = getPreviousStableState(lastStableState)
-            } else {
-                // eventually fall all the way back to the last state if velocity is 0 and the
-                // touch event only moved a small amount
-                trace("snapping to last stable state")
-                targetState = lastStableState
+            }
+            else -> targetState = when {
+                percentage > 0.1 -> {
+                    // snap up
+                    trace("percentage moved %s snapping up", percentage)
+                    getNextStableState(lastStableState)
+                }
+                percentage < -0.1 -> {
+                    //snap down
+                    trace("percentage moved %s snapping down", percentage)
+                    getPreviousStableState(lastStableState)
+                }
+                else -> {
+                    // eventually fall all the way back to the last state if velocity is 0 and the
+                    // touch event only moved a small amount
+                    trace("snapping to closest stable state")
+                    getClosestState(target as BottomSheet)
+                }
             }
         }
 
@@ -840,11 +841,11 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal open fun getNextStableState(currentState: BottomSheetState): BottomSheetState {
-        when (currentState) {
-            BottomSheetState.STATE_HIDDEN -> return BottomSheetState.STATE_COLLAPSED
-            BottomSheetState.STATE_COLLAPSED -> return BottomSheetState.STATE_ANCHOR_POINT
-            BottomSheetState.STATE_ANCHOR_POINT -> return BottomSheetState.STATE_EXPANDED
-            else -> return currentState
+        return when (currentState) {
+            BottomSheetState.STATE_HIDDEN -> BottomSheetState.STATE_COLLAPSED
+            BottomSheetState.STATE_COLLAPSED -> BottomSheetState.STATE_ANCHOR_POINT
+            BottomSheetState.STATE_ANCHOR_POINT -> BottomSheetState.STATE_EXPANDED
+            else -> currentState
         }
     }
 
@@ -857,18 +858,18 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal open fun getPreviousStableState(currentState: BottomSheetState): BottomSheetState {
-        when (currentState) {
-            BottomSheetState.STATE_EXPANDED -> return BottomSheetState.STATE_ANCHOR_POINT
-            BottomSheetState.STATE_ANCHOR_POINT -> return BottomSheetState.STATE_COLLAPSED
-            BottomSheetState.STATE_COLLAPSED -> return BottomSheetState.STATE_HIDDEN
-            else -> return BottomSheetState.STATE_HIDDEN
+        return when (currentState) {
+            BottomSheetState.STATE_EXPANDED -> BottomSheetState.STATE_ANCHOR_POINT
+            BottomSheetState.STATE_ANCHOR_POINT -> BottomSheetState.STATE_COLLAPSED
+            BottomSheetState.STATE_COLLAPSED -> BottomSheetState.STATE_HIDDEN
+            else -> BottomSheetState.STATE_HIDDEN
         }
     }
 
     internal fun isStateStable(currentState: BottomSheetState): Boolean {
-        when (currentState) {
-            BottomSheetState.STATE_ANCHOR_POINT, BottomSheetState.STATE_COLLAPSED, BottomSheetState.STATE_EXPANDED, BottomSheetState.STATE_HIDDEN -> return true
-            else -> return false
+        return when (currentState) {
+            BottomSheetState.STATE_ANCHOR_POINT, BottomSheetState.STATE_COLLAPSED, BottomSheetState.STATE_EXPANDED, BottomSheetState.STATE_HIDDEN -> true
+            else -> false
         }
     }
 
@@ -900,9 +901,31 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
             }
             else -> {
                 debug("UNKNOWN_STATE top: %s", 0)
-                return 0
+                return -1
             }
         }
+    }
+
+    internal fun getClosestState(top: Int) : BottomSheetState {
+        info("getClosestState()")
+        return getListOfTopsSortedByDistance(top)
+                .first()
+                .first
+    }
+
+    internal fun getClosestState(bottomSheet: BottomSheet) : BottomSheetState =
+            getClosestState(bottomSheet.top)
+
+    internal fun getListOfTopsSortedByDistance(top: Int) : List<Pair<BottomSheetState, Int>> {
+        info("getListOfTopsSortedByDistance($top: Int)")
+        debug(Arrays.toString(getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { Math.abs(it.second - top) }.toTypedArray()))
+        return getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { Math.abs(it.second - top) }
+    }
+
+    internal fun getListOfTops() : List<Pair<BottomSheetState, Int>> {
+        info("getListOfTops()")
+        debug(Arrays.toString(BottomSheetState.values().map { Pair(it, getTopForState(it)) }.toTypedArray()))
+        return BottomSheetState.values().map { Pair(it, getTopForState(it)) }
     }
 
     protected fun attemptToActivateBottomsheet(view: View) {
@@ -946,15 +969,14 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     internal open fun startSettlingAnimation(child: View, state: BottomSheetState) {
-        val top: Int
-        if (state == BottomSheetState.STATE_COLLAPSED) {
-            top = maxOffset
+        val top: Int = if (state == BottomSheetState.STATE_COLLAPSED) {
+            maxOffset
         } else if (state == BottomSheetState.STATE_ANCHOR_POINT) {
-            top = anchorPoint
+            anchorPoint
         } else if (state == BottomSheetState.STATE_EXPANDED) {
-            top = minOffset
+            minOffset
         } else if (isHideable && state == BottomSheetState.STATE_HIDDEN) {
-            top = parentHeight
+            parentHeight
         } else {
             throw IllegalArgumentException("Illegal state argument: " + state)
         }
@@ -1011,9 +1033,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         fun <V : View> from(view: V): AnchorPointBottomSheetBehavior<*>? {
             val params = view.layoutParams as? CoordinatorLayout.LayoutParams ?: return null
 
-            val behavior = params.behavior as? AnchorPointBottomSheetBehavior<*> ?: return null
-
-            return behavior
+            return params.behavior as? AnchorPointBottomSheetBehavior<*> ?: return null
         }
     }
     //endregion

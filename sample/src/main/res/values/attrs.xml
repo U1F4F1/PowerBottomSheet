@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="HeaderView">
+        <attr name="poiName" format="string"/>
+        <attr name="poiAddress" format="string"/>
+        <attr name="poiDistance" format="string"/>
+        <attr name="poiType" format="string"/>
+        <attr name="activeBackgroundColor" format="color"/>
+        <attr name="activeTextColor" format="color"/>
+        <attr name="inactiveTextColorSecondary" format="color" />
+        <attr name="inactiveBackgroundColor" format="color"/>
+        <attr name="inactiveTextColor" format="color"/>
+    </declare-styleable>
+</resources>

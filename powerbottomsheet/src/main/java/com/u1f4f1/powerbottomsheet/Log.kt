@@ -83,6 +83,4 @@ fun error(throwable: Throwable, message: String) {
     Log.e(LOG_TAG, message, throwable)
 }
 
-private fun shouldSkipMessage(level: Int) : Boolean {
-    return logLevel > level
-}
+private fun shouldSkipMessage(level: Int) : Boolean = logLevel > level

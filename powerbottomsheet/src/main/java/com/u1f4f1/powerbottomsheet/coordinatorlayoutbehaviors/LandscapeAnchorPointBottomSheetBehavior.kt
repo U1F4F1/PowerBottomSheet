@@ -12,7 +12,7 @@ import com.u1f4f1.powerbottomsheet.trace
 class LandscapeAnchorPointBottomSheetBehavior<V : View>(context: Context, attrs: AttributeSet?) : AnchorPointBottomSheetBehavior<V>(context, attrs) {
 
     override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
-        attemptToActivateBottomsheet(child!!)
+        attemptToActivateBottomsheet(child)
 
         val scrollingChild = nestedScrollingChildRef!!.get()
         if (target != scrollingChild) {
@@ -49,7 +49,7 @@ class LandscapeAnchorPointBottomSheetBehavior<V : View>(context: Context, attrs:
             }
         } else if (dy < 0) { // Downward
             trace("downward")
-            if (!ViewCompat.canScrollVertically(target, -1)) {
+            if (!target.canScrollVertically(-1)) {
                 trace("can scroll vertically")
                 if (newTop <= maxOffset || isHideable) {
                     trace("newTop <= maxOffset || hideable")

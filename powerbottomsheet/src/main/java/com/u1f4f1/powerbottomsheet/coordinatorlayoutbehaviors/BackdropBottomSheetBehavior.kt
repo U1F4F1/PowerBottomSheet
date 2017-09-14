@@ -52,6 +52,7 @@ class BackdropBottomSheetBehavior<V : View>(context: Context?, attrs: AttributeS
      * [child] is the instance of the view that we're scrolling behind the [BottomSheet]
      * [dependency] the instance of the [BottomSheet]
      */
+    @Suppress("UnnecessaryVariable")
     override fun onDependentViewChanged(parent: CoordinatorLayout, child: V, dependency: View): Boolean {
         super.onDependentViewChanged(parent, child, dependency)
 
