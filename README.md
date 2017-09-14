@@ -1,7 +1,7 @@
 # 🔋 PowerBottomSheet 🔋
 
 
-A BottomSheet library for Android.
+A BottomSheet library for Android. This attempts to recreate the experience of the Google Maps BottomSheet through the use of CoordinatorLayout Behaviors.
 
 [![](https://jitpack.io/v/u1f4f1/PowerBottomSheet.svg?style=flat-square)](https://jitpack.io/#u1f4f1/PowerBottomSheet)
 
@@ -20,7 +20,7 @@ If you haven't already, add JitPack to your gradle repositories.
 Then add the dependency to PowerBottomSheet
 
 ```groovy
-    compile 'com.github.u1f4f1:PowerBottomSheet:1.0'
+    compile "com.github.u1f4f1:PowerBottomSheet:$versionNumber"
 ```
 
 
