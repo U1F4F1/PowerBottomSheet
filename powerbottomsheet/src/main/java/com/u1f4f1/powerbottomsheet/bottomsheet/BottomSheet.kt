@@ -15,6 +15,7 @@ import com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors.AnchorPointBottomS
 import com.u1f4f1.powerbottomsheet.humanReadableToString
 import com.u1f4f1.powerbottomsheet.info
 import com.u1f4f1.powerbottomsheet.trace
+import com.u1f4f1.powerbottomsheet.warn
 import java.util.*
 
 abstract class BottomSheet : NestedScrollView {
@@ -154,6 +155,7 @@ abstract class BottomSheet : NestedScrollView {
     }
 
     open fun reset() {
+        warn("reset bottomsheet scroll")
         ViewCompat.postOnAnimation(this) {
             smoothScrollTo(0, 0)
             trace("bottomsheet settling")

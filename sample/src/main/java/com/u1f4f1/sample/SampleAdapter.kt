@@ -13,7 +13,7 @@ class SampleAdapter(behavior: AnchorPointBottomSheetBehavior<*>?) : BottomSheetA
     fun addFakeViews() {
         addModel(ExpandingCardModel_().delayedTransitionRunnable { recyclerViewTransitionRunnable.run() })
 
-        for (i in 0..20) {
+        for (i in 0..25) {
             addModel(QuoteCardModel_().quote(Fakeit.rickAndMorty().quote()).attribution(Fakeit.rickAndMorty().character()))
         }
     }
