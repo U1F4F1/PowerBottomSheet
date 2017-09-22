@@ -900,8 +900,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 return minOffset
             }
             else -> {
-                debug("UNKNOWN_STATE top: %s", 0)
-                return -1
+                throw RuntimeException("Cannot get the top for a transient state")
             }
         }
     }
@@ -916,17 +915,11 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     internal fun getClosestState(bottomSheet: BottomSheet) : BottomSheetState =
             getClosestState(bottomSheet.top)
 
-    internal fun getListOfTopsSortedByDistance(top: Int) : List<Pair<BottomSheetState, Int>> {
-        info("getListOfTopsSortedByDistance($top: Int)")
-        debug(Arrays.toString(getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { Math.abs(it.second - top) }.toTypedArray()))
-        return getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { Math.abs(it.second - top) }
-    }
+    internal fun getListOfTopsSortedByDistance(top: Int) : List<Pair<BottomSheetState, Int>> =
+            getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { Math.abs(it.second - top) }
 
-    internal fun getListOfTops() : List<Pair<BottomSheetState, Int>> {
-        info("getListOfTops()")
-        debug(Arrays.toString(BottomSheetState.values().map { Pair(it, getTopForState(it)) }.toTypedArray()))
-        return BottomSheetState.values().map { Pair(it, getTopForState(it)) }
-    }
+    internal fun getListOfTops() : List<Pair<BottomSheetState, Int>> =
+            BottomSheetState.values().filter { isStateStable(it) }.map { Pair(it, getTopForState(it)) }
 
     protected fun attemptToActivateBottomsheet(view: View) {
         if (view is BottomSheet) {
