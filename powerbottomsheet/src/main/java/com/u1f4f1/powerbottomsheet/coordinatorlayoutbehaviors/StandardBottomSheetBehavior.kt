@@ -230,13 +230,12 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
     }
 
     override fun startSettlingAnimation(child: View, state: BottomSheetState) {
-        val top: Int
-        if (state == BottomSheetState.STATE_COLLAPSED) {
-            top = maxOffset
+        val top: Int = if (state == BottomSheetState.STATE_COLLAPSED) {
+            maxOffset
         } else if (state == BottomSheetState.STATE_EXPANDED) {
-            top = minOffset
+            minOffset
         } else if (isHideable && state == BottomSheetState.STATE_HIDDEN) {
-            top = parentHeight
+            parentHeight
         } else {
             throw IllegalArgumentException("Illegal state argument: " + state)
         }

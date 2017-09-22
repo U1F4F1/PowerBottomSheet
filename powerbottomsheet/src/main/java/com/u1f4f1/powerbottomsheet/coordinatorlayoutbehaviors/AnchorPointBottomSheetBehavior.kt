@@ -38,7 +38,6 @@ import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheet
 import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetState
 import com.u1f4f1.powerbottomsheet.bottomsheet.SavedState
 import java.lang.ref.WeakReference
-import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
 
@@ -112,13 +111,15 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     /**
      * Runnable that handles animating the [BottomSheet] to a stable [BottomSheetState]
      */
-    internal inner class SettleRunnable(private val mView: View, private val targetState: BottomSheetState) : Runnable {
+    protected inner class SettleRunnable(private val mView: View, private val targetState: BottomSheetState) : Runnable {
 
         override fun run() {
             if (viewDragHelper != null && viewDragHelper!!.continueSettling(true)) {
                 ViewCompat.postOnAnimation(mView, this)
             } else {
                 setStateInternal(targetState)
+                isSettling = false
+                disableScrollEvents = false
             }
         }
     }
@@ -247,8 +248,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     //region STATE TRACKING
 
     // starting off the screen so we can animate the move up
-    open var state = BottomSheetState.STATE_HIDDEN
-        get() = field
+    private var internalState = BottomSheetState.STATE_HIDDEN
+    open var state: BottomSheetState
+        get() = internalState
 
         /**
          * Sets the state of the bottom sheet. The bottom sheet will transition to that state with
@@ -257,16 +259,20 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
          * @param value One of [.STATE_COLLAPSED], [.STATE_EXPANDED], or [.STATE_HIDDEN].
          */
         set(value) {
-            trace("var state = $value, was $field")
+            trace("var state = $value, was $internalState is settling $isSettling")
 
-            if (value == this.state) {
+            if (this.internalState == value) {
                 return
             }
 
-            field = value
+            internalState = value
 
             if (viewRef == null) {
                 // The view is not laid out yet; modify state and let onLayoutChild handle it later
+                if (state == BottomSheetState.STATE_COLLAPSED || state == BottomSheetState.STATE_EXPANDED ||
+                        (isHideable && state == BottomSheetState.STATE_HIDDEN)) {
+                    internalState = state
+                }
                 return
             }
 
@@ -314,6 +320,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         get() = isStateStable(state)
 
     internal open fun setStateInternal(state: BottomSheetState) {
+        trace("setStateInternal($state: BottomSheetState)")
+
         if (this.state == state) {
             return
         }
@@ -334,7 +342,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     fun reset() {
-        trace("resetting AnchorPointBottomSheet velocity and pointer")
+        warn("resetting AnchorPointBottomSheet velocity and pointer")
         activePointerId = ViewDragHelper.INVALID_POINTER
         if (velocityTracker != null) {
             velocityTracker!!.recycle()
@@ -391,6 +399,18 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * @attr ref R.styleable.AnchorPointBottomSheetBehavior_disableDragging
      */
     var disableDragging: Boolean = false
+
+    /**
+     * Stop reacting to scroll events.
+     *
+     * We do this in cases where we have to snap down while manually resetting the Scroll of the BottomSheet to 0 so the collapsed state looks correct.
+     */
+    var disableScrollEvents: Boolean = false
+
+    /**
+     * Tracks whether or not we're attempting to 'settle' the sheet by playing an animation
+     */
+    var isSettling: Boolean = false
 
     /**
      * This will set the max height for the sheet to the peek height. The sheet will still react to
@@ -516,11 +536,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
 
         if (view is ViewGroup) {
-            val group = view
             var i = 0
-            val count = group.childCount
+            val count = view.childCount
             while (i < count) {
-                val scrollingChild = findScrollingChild(group.getChildAt(i))
+                val scrollingChild = findScrollingChild(view.getChildAt(i))
                 if (scrollingChild != null) {
                     return scrollingChild
                 }
@@ -670,6 +689,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onStartNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, directTargetChild: View, target: View, axes: Int, type: Int): Boolean {
+        if (disableScrollEvents) return false
+
+        // this uses a SparseArray to store a flag that checks if we should scroll with a view.
+        // There are 3 states, -1 for views we haven't checked, 0 for views we don't scroll with, and 1 for views we care about
         if (shouldScrollWithView.get(child.hashCode() + directTargetChild.hashCode(), -1) != -1) {
             return shouldScrollWithView.get(child.hashCode() + directTargetChild.hashCode()) == 1
         }
@@ -695,6 +718,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     override fun onNestedPreScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
         attemptToActivateBottomsheet(child as View)
+
+        if (disableScrollEvents) return
 
         val scrollingChild = nestedScrollingChildRef?.get()
         if (target !== scrollingChild) {
@@ -752,6 +777,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     override fun onStopNestedScroll(coordinatorLayout: CoordinatorLayout, child: V, target: View, type: Int) {
+        if (disableScrollEvents) return
+
         if (child.top == minOffset) {
             setStateInternal(BottomSheetState.STATE_EXPANDED)
             lastStableState = BottomSheetState.STATE_EXPANDED
@@ -840,14 +867,13 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * @return the next stable state that the sheet should settle at
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal open fun getNextStableState(currentState: BottomSheetState): BottomSheetState {
-        return when (currentState) {
-            BottomSheetState.STATE_HIDDEN -> BottomSheetState.STATE_COLLAPSED
-            BottomSheetState.STATE_COLLAPSED -> BottomSheetState.STATE_ANCHOR_POINT
-            BottomSheetState.STATE_ANCHOR_POINT -> BottomSheetState.STATE_EXPANDED
-            else -> currentState
-        }
-    }
+    internal open fun getNextStableState(currentState: BottomSheetState): BottomSheetState =
+            when (currentState) {
+                BottomSheetState.STATE_HIDDEN -> BottomSheetState.STATE_COLLAPSED
+                BottomSheetState.STATE_COLLAPSED -> BottomSheetState.STATE_ANCHOR_POINT
+                BottomSheetState.STATE_ANCHOR_POINT -> BottomSheetState.STATE_EXPANDED
+                else -> currentState
+            }
 
     /**
      * Takes a [State] and returns the next stable state as the bottom sheet contracts
@@ -857,20 +883,17 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * @return the next stable state that the sheet should settle at
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal open fun getPreviousStableState(currentState: BottomSheetState): BottomSheetState {
-        return when (currentState) {
-            BottomSheetState.STATE_EXPANDED -> BottomSheetState.STATE_ANCHOR_POINT
-            BottomSheetState.STATE_ANCHOR_POINT -> BottomSheetState.STATE_COLLAPSED
-            BottomSheetState.STATE_COLLAPSED -> BottomSheetState.STATE_HIDDEN
-            else -> BottomSheetState.STATE_HIDDEN
-        }
-    }
+    internal open fun getPreviousStableState(currentState: BottomSheetState): BottomSheetState =
+            when (currentState) {
+                BottomSheetState.STATE_EXPANDED -> BottomSheetState.STATE_ANCHOR_POINT
+                BottomSheetState.STATE_ANCHOR_POINT -> BottomSheetState.STATE_COLLAPSED
+                BottomSheetState.STATE_COLLAPSED -> BottomSheetState.STATE_HIDDEN
+                else -> BottomSheetState.STATE_HIDDEN
+            }
 
-    internal fun isStateStable(currentState: BottomSheetState): Boolean {
-        return when (currentState) {
-            BottomSheetState.STATE_ANCHOR_POINT, BottomSheetState.STATE_COLLAPSED, BottomSheetState.STATE_EXPANDED, BottomSheetState.STATE_HIDDEN -> true
-            else -> false
-        }
+    internal fun isStateStable(currentState: BottomSheetState): Boolean = when (currentState) {
+        BottomSheetState.STATE_ANCHOR_POINT, BottomSheetState.STATE_COLLAPSED, BottomSheetState.STATE_EXPANDED, BottomSheetState.STATE_HIDDEN -> true
+        else -> false
     }
 
     /**
@@ -881,7 +904,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * @return the y position that the top of the sheet will be at once it is done settling
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal open fun getTopForState(state: BottomSheetState): Int {
+    internal open fun  getTopForState(state: BottomSheetState): Int {
         when (state) {
             BottomSheetState.STATE_HIDDEN -> {
                 debug("STATE_HIDDEN top: %s", parentHeight)
@@ -962,6 +985,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
     }
 
     internal open fun startSettlingAnimation(child: View, state: BottomSheetState) {
+        debug("startSettlingAnimation(child: View, $state: BottomSheetState)")
+        if (isSettling) return
+
         val top: Int = if (state == BottomSheetState.STATE_COLLAPSED) {
             maxOffset
         } else if (state == BottomSheetState.STATE_ANCHOR_POINT) {
@@ -976,6 +1002,8 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
         if (viewDragHelper!!.smoothSlideViewTo(child, child.left, top)) {
             setStateInternal(BottomSheetState.STATE_SETTLING)
+            isSettling = true
+            disableScrollEvents = true
             ViewCompat.postOnAnimation(child, SettleRunnable(child, state))
         } else {
             // we din't need to slide the view, so we aren't settling

@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
 import android.support.v7.app.AppCompatDelegate
 import com.u1f4f1.powerbottomsheet.trace
+import com.u1f4f1.powerbottomsheet.warn
 
 
 class MainActivity : AppCompatActivity() {
@@ -53,6 +54,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        warn("pressing back button, must cancel animations and snap down at least one state")
+
         if (bottomSheetBehavior?.state === BottomSheetState.STATE_EXPANDED || bottomSheetBehavior?.state === BottomSheetState.STATE_ANCHOR_POINT) {
             bottomSheetBehavior?.state = BottomSheetState.STATE_COLLAPSED
             bottomSheetBehavior!!.reset()
