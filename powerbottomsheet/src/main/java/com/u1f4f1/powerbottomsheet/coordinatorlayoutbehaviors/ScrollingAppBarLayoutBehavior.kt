@@ -83,7 +83,18 @@ class ScrollingAppBarLayoutBehavior(private val context: Context, attrs: Attribu
         isVisible = dependency.y >= mCollapsedY
 
         setStatusBarBackgroundVisible(isVisible)
-        if (!isVisible) child.y = (child.y.toInt() - child.height - statusBarHeight).toFloat()
+        
+        if (!isVisible) {
+            //When bootSheet in the window top and switch windwow,
+            // Should set AppBarLayout.y value(Start animation location)
+            child.getChildAppBarLayout()?.let {
+                it.y = (child.y.toInt() - child.height - statusBarHeight).toFloat()
+            }
+
+            //set child.y = 0, let child is visible
+            child.y = 0f
+        }
+
         isInitialized = true
 
         // We only need to move the view if we aren't already visible
