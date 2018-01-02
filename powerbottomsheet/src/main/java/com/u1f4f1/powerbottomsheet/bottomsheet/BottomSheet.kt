@@ -157,7 +157,8 @@ abstract class BottomSheet : NestedScrollView {
     open fun reset() {
         warn("reset bottomsheet scroll")
         ViewCompat.postOnAnimation(this) {
-            smoothScrollTo(0, 0)
+			//I don't think this logic is necessary, please check it. Fix bug for OMA-1344
+            //smoothScrollTo(0, 0)
             trace("bottomsheet settling")
         }
     }

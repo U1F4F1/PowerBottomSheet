@@ -754,15 +754,15 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         } else if (dy < 0) { // Downward
             trace("downward")
             if (!target.canScrollVertically(-1)) {
-                trace("can scroll vertically")
-                if (newTop <= maxOffset || isHideable) {
-                    trace("newTop <= maxOffset || hideable")
+                trace("can scroll vertically")				
+                if (newTop <= maxOffset) {
+                    trace("newTop <= maxOffset")
                     consumed[1] = dy
                     ViewCompat.offsetTopAndBottom(child, -dy)
                     trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -dy)
                     setStateInternal(BottomSheetState.STATE_DRAGGING)
                 } else {
-                    trace("newTop > maxOffset || hideable")
+                    trace("newTop > maxOffset")
                     consumed[1] = currentTop - maxOffset
                     ViewCompat.offsetTopAndBottom(child, -consumed[1])
                     trace("ViewCompat.offsetTopAndBottom(%s, %s)", child.top, -consumed[1])
