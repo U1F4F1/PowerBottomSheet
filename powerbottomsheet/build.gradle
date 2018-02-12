@@ -5,8 +5,10 @@ apply plugin: 'de.mobilej.unmock'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'maven-publish'
+apply plugin: 'com.github.dcendents.android-maven'
 
+group='com.github.PowerBottomSheet'
+version='1.9'
 
 androidExtensions {
     experimental = true
@@ -61,32 +63,6 @@ dependencies {
     testCompile 'org.amshove.kluent:kluent:1.30'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId 'com.github.u1f4f1'
-            artifactId 'PowerBottomSheet'
-            version '1.8'
-            artifact("$buildDir/outputs/aar/powerbottomsheet-release.aar")
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
-                configurations.compile.allDependencies.each {
-                    if(it.group != null && (it.name != null || "unspecified" == it.name) && it.version != null)
-                    {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                    }
-                }
-            }
-        }
-    }
-}
-
-publishToMavenLocal.dependsOn assemble
 
 repositories {
     mavenCentral()
