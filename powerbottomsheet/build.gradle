@@ -18,7 +18,7 @@ android {
         minSdkVersion 16
         targetSdkVersion androidCompileSdkVersion
         versionCode 2
-        versionName "1.7.1"
+        versionName "1.8"
     }
     buildTypes {
         release {
@@ -67,7 +67,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.github.u1f4f1'
             artifactId 'PowerBottomSheet'
-            version '1.7.7'
+            version '1.8'
             artifact("$buildDir/outputs/aar/powerbottomsheet-release.aar")
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
@@ -85,6 +85,8 @@ publishing {
         }
     }
 }
+
+publishToMavenLocal.dependsOn assemble
 
 repositories {
     mavenCentral()
