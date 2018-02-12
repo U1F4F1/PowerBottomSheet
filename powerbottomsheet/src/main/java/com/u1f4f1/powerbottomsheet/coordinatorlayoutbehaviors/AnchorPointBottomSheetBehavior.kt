@@ -22,7 +22,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.os.Parcelable
-import android.support.annotation.VisibleForTesting
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.CoordinatorLayout
 import android.support.v4.view.GestureDetectorCompat
@@ -124,7 +123,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
     }
 
-    internal val mDragCallback: ViewDragHelper.Callback = object : ViewDragHelper.Callback() {
+    internal val dragCalback: ViewDragHelper.Callback = object : ViewDragHelper.Callback() {
 
         override fun tryCaptureView(child: View, pointerId: Int): Boolean {
             if (state == BottomSheetState.STATE_DRAGGING) {
@@ -479,8 +478,9 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     override fun onSaveInstanceState(parent: CoordinatorLayout?, child: V?): Parcelable {
         trace("onSaveInstanceState(${parent?.humanReadableToString()}: CoordinatorLayout?, ${child?.humanReadableToString()}: V?): Parcelable")
+        super.onSaveInstanceState(parent, child)
 
-        return SavedState(state)
+        return SavedState(state.id)
     }
 
     override fun onRestoreInstanceState(parent: CoordinatorLayout?, child: V?, state: Parcelable?) {
@@ -489,10 +489,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         // todo restore the position of the screen the sheet was on, and the state that we should animate too
         val ss = state as SavedState
         // Intermediate states are restored as collapsed state
-        if (ss.bottomSheetState == BottomSheetState.STATE_DRAGGING || ss.bottomSheetState == BottomSheetState.STATE_SETTLING) {
+        if (ss.bottomSheetState == BottomSheetState.STATE_DRAGGING.id || ss.bottomSheetState == BottomSheetState.STATE_SETTLING.id) {
             this.state = BottomSheetState.STATE_COLLAPSED
         } else {
-            this.state = ss.bottomSheetState
+            this.state = BottomSheetState.fromInt(ss.bottomSheetState)
         }
 
         lastStableState = this.state
@@ -581,7 +581,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
 
         if (viewDragHelper == null) {
-            viewDragHelper = ViewDragHelper.create(parent, mDragCallback)
+            viewDragHelper = ViewDragHelper.create(parent, dragCalback)
         }
 
         viewRef = WeakReference(child)
@@ -669,7 +669,10 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         if (state == BottomSheetState.STATE_DRAGGING && action == MotionEvent.ACTION_DOWN) {
             return true
         }
-        viewDragHelper!!.processTouchEvent(event)
+        if (viewDragHelper == null) {
+            ViewDragHelper.create(parent, dragCalback)
+        }
+        viewDragHelper?.processTouchEvent(event)
         // Record the velocity
         if (action == MotionEvent.ACTION_DOWN) {
             reset()
@@ -866,7 +869,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * *
      * @return the next stable state that the sheet should settle at
      */
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal open fun getNextStableState(currentState: BottomSheetState): BottomSheetState =
             when (currentState) {
                 BottomSheetState.STATE_HIDDEN -> BottomSheetState.STATE_COLLAPSED
@@ -882,7 +884,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * *
      * @return the next stable state that the sheet should settle at
      */
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal open fun getPreviousStableState(currentState: BottomSheetState): BottomSheetState =
             when (currentState) {
                 BottomSheetState.STATE_EXPANDED -> BottomSheetState.STATE_ANCHOR_POINT
@@ -903,7 +904,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
      * *
      * @return the y position that the top of the sheet will be at once it is done settling
      */
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal open fun  getTopForState(state: BottomSheetState): Int {
         when (state) {
             BottomSheetState.STATE_HIDDEN -> {
@@ -950,7 +950,6 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         }
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected fun activateBottomsheetIfTopAbovePeekHeight(bottomSheet: BottomSheet) {
         val shouldActivate = bottomSheet.top < (bottomSheet.parent as View).height - peekHeight || state != BottomSheetState.STATE_COLLAPSED
 

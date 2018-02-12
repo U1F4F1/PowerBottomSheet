@@ -14,11 +14,11 @@ class TabletAnchorPointBottomSheetBehavior<V : View>(context: Context, attrs: At
     override fun onRestoreInstanceState(parent: CoordinatorLayout?, child: V?, state: Parcelable?) {
         val ss = state as SavedState
         // Intermediate states are restored as the anchored state, collapse state is ignored
-        if (ss.bottomSheetState === BottomSheetState.STATE_DRAGGING || ss.bottomSheetState === BottomSheetState.STATE_SETTLING || ss.bottomSheetState === BottomSheetState.STATE_COLLAPSED) {
+        if (ss.bottomSheetState == BottomSheetState.STATE_DRAGGING.id || ss.bottomSheetState == BottomSheetState.STATE_SETTLING.id || ss.bottomSheetState == BottomSheetState.STATE_COLLAPSED.id) {
             this.state = BottomSheetState.STATE_ANCHOR_POINT
             attemptToActivateBottomsheet(child!!)
         } else {
-            this.state = ss.bottomSheetState
+            this.state = BottomSheetState.fromInt(ss.bottomSheetState)
         }
 
         lastStableState = this.state

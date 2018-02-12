@@ -11,7 +11,7 @@ abstract class HeaderModel : EpoxyModel<HeaderView>() {
 
     @EpoxyAttribute var active: Boolean = false
 
-    override fun bind(view: HeaderView, payloads: List<Any>?) {
+    override fun bind(view: HeaderView, payloads: List<Any>) {
         bind(view)
     }
 
@@ -21,9 +21,5 @@ abstract class HeaderModel : EpoxyModel<HeaderView>() {
         } else {
             view.deactivate()
         }
-    }
-
-    override fun unbind(view: HeaderView?) {
-        super.unbind(view)
     }
 }

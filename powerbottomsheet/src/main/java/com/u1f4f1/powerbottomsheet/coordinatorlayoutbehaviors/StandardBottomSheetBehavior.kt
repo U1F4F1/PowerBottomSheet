@@ -94,7 +94,7 @@ class StandardBottomSheetBehavior<V : View> : AnchorPointBottomSheetBehavior<V> 
             ViewCompat.offsetTopAndBottom(child, savedTop - child.top)
         }
         if (viewDragHelper == null) {
-            viewDragHelper = ViewDragHelper.create(parent, mDragCallback)
+            viewDragHelper = ViewDragHelper.create(parent, dragCalback)
         }
         viewRef = WeakReference(child)
         nestedScrollingChildRef = WeakReference(findScrollingChild(child)!!)
