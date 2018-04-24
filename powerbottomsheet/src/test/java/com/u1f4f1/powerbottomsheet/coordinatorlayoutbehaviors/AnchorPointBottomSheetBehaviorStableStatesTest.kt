@@ -2,7 +2,7 @@ package com.u1f4f1.powerbottomsheet.coordinatorlayoutbehaviors
 
 import android.view.View
 import com.u1f4f1.powerbottomsheet.bottomsheet.BottomSheetState
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -110,7 +110,36 @@ class AnchorPointBottomSheetBehaviorTopForState(val input: BottomSheetState, val
                     arrayOf(BottomSheetState.STATE_HIDDEN, 100),
                     arrayOf(BottomSheetState.STATE_COLLAPSED, 200),
                     arrayOf(BottomSheetState.STATE_ANCHOR_POINT, 666),
-                    arrayOf(BottomSheetState.STATE_EXPANDED, 300),
+                    arrayOf(BottomSheetState.STATE_EXPANDED, 300)
+            )
+        }
+    }
+
+    @Before
+    fun setup() {
+        behavior = AnchorPointBottomSheetBehavior()
+        behavior.parentHeight = 100
+        behavior.maxOffset = 200
+        behavior.height = 1432
+        behavior.peekHeight = 100
+        behavior.minOffset = 300
+    }
+
+    @Test
+    fun isTopCorrect() {
+        behavior.getTopForState(input) shouldEqual expected
+    }
+}
+
+@RunWith(Parameterized::class)
+class AnchorPointBottomSheetBehaviorTopForTransientState(val input: BottomSheetState, val expected: Int) {
+    lateinit var behavior: AnchorPointBottomSheetBehavior<View>
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "the top for state {0} is {1}")
+        fun data(): Collection<Array<Any>> {
+            return listOf(
                     arrayOf(BottomSheetState.STATE_DRAGGING, 0),
                     arrayOf(BottomSheetState.STATE_SETTLING, 0)
             )
@@ -122,13 +151,16 @@ class AnchorPointBottomSheetBehaviorTopForState(val input: BottomSheetState, val
         behavior = AnchorPointBottomSheetBehavior()
         behavior.parentHeight = 100
         behavior.maxOffset = 200
-        behavior.anchorPoint = 666
+        behavior.height = 1432
+        behavior.peekHeight = 100
         behavior.minOffset = 300
     }
 
     @Test
     fun isTopCorrect() {
-        behavior.getTopForState(input) shouldEqual expected
+        val top = { behavior.getTopForState(input) }
+
+        top shouldThrow IllegalArgumentException::class withMessage "Cannot get the top for a transient state [$input]"
     }
 }
 
@@ -141,14 +173,14 @@ class AnchorPointBottomSheetBehaviorClosestStableState(val top: Int, val expecte
         @Parameterized.Parameters(name = "the closest stable state to {0} is {1}")
         fun data(): Collection<Array<Any>> {
             return listOf(
-                    arrayOf(1920, BottomSheetState.STATE_HIDDEN),
-                    arrayOf(1900, BottomSheetState.STATE_HIDDEN),
-                    arrayOf(1800, BottomSheetState.STATE_COLLAPSED),
-                    arrayOf(1750, BottomSheetState.STATE_COLLAPSED),
-                    arrayOf(1000, BottomSheetState.STATE_ANCHOR_POINT),
+                    arrayOf(2712, BottomSheetState.STATE_HIDDEN),
+                    arrayOf(2614, BottomSheetState.STATE_HIDDEN),
+                    arrayOf(2194, BottomSheetState.STATE_COLLAPSED),
+                    arrayOf(2378, BottomSheetState.STATE_COLLAPSED),
+                    arrayOf(1500, BottomSheetState.STATE_ANCHOR_POINT),
                     arrayOf(0, BottomSheetState.STATE_EXPANDED),
-                    arrayOf(-1, BottomSheetState.STATE_DRAGGING),
-                    arrayOf(-1, BottomSheetState.STATE_SETTLING)
+                    arrayOf(-1, BottomSheetState.STATE_EXPANDED),
+                    arrayOf(-1, BottomSheetState.STATE_EXPANDED)
             )
         }
     }
@@ -156,10 +188,11 @@ class AnchorPointBottomSheetBehaviorClosestStableState(val top: Int, val expecte
     @Before
     fun setup() {
         behavior = AnchorPointBottomSheetBehavior()
-        behavior.parentHeight = 100
-        behavior.maxOffset = 200
-        behavior.anchorPoint = 666
-        behavior.minOffset = 300
+        behavior.parentHeight = 2614
+        behavior.maxOffset = 2194
+        behavior.height = 2712
+        behavior.peekHeight = 160
+        behavior.minOffset = 0
     }
 
     @Test

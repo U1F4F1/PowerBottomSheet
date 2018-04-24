@@ -1,6 +1,6 @@
-ext.androidCompileSdkVersion = 26
-ext.supportLibraryVersion = "26.1.0"
+ext.androidCompileSdkVersion = 27
+ext.supportLibraryVersion = "27.1.0"
 
-ext.kotlin_version = '1.2.21'
+ext.kotlin_version = '1.2.40'
 
-ext.expoxy_version = '2.9.0'
+ext.expoxy_version = '2.11.0'

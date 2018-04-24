@@ -193,7 +193,7 @@ class ScrollingAppBarLayoutBehavior(private val context: Context, attrs: Attribu
 
         internal val isVisible: Boolean
 
-        constructor(source: Parcel) : super(source, SavedState::class.java.classLoader) {
+        constructor(source: Parcel) : super(source) {
             isVisible = source.readByte().toInt() != 0
         }
 

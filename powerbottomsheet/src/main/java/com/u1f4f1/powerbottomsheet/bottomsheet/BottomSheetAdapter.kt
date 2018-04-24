@@ -39,7 +39,7 @@ abstract class BottomSheetAdapter(val behavior: AnchorPointBottomSheetBehavior<*
     }
 
     @TargetApi(19)
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView?) {
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
 
         trace("BottomSheetAdapter.onAttachedToRecyclerView(recyclerView: RecyclerView?)")

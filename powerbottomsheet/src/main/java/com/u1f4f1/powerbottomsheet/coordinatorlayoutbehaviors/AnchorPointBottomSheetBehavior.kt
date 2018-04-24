@@ -302,7 +302,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
 
     protected var initialY: Int = 0
 
-    protected var height: Int = 0
+    internal var height: Int = 0
 
     protected var bottomSheetIsActive: Boolean = false
 
@@ -669,7 +669,7 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
         if (state == BottomSheetState.STATE_DRAGGING && action == MotionEvent.ACTION_DOWN) {
             return true
         }
-        if (viewDragHelper == null) {
+        if (viewDragHelper == null && parent != null) {
             ViewDragHelper.create(parent, dragCalback)
         }
         viewDragHelper?.processTouchEvent(event)
@@ -923,23 +923,19 @@ open class AnchorPointBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior
                 return minOffset
             }
             else -> {
-                throw RuntimeException("Cannot get the top for a transient state")
+                throw IllegalArgumentException("Cannot get the top for a transient state [$state]")
             }
         }
     }
 
-    internal fun getClosestState(top: Int) : BottomSheetState {
-        info("getClosestState()")
-        return getListOfTopsSortedByDistance(top)
-                .first()
-                .first
-    }
+    internal fun getClosestState(top: Int) : BottomSheetState =
+            getListOfTopsSortedByDistance(top).first().first
 
     internal fun getClosestState(bottomSheet: BottomSheet) : BottomSheetState =
             getClosestState(bottomSheet.top)
 
     internal fun getListOfTopsSortedByDistance(top: Int) : List<Pair<BottomSheetState, Int>> =
-            getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { Math.abs(it.second - top) }
+            getListOfTops().map { Pair(it.first, Math.abs(it.second - top)) }.sortedBy { it.second }
 
     internal fun getListOfTops() : List<Pair<BottomSheetState, Int>> =
             BottomSheetState.values().filter { isStateStable(it) }.map { Pair(it, getTopForState(it)) }
