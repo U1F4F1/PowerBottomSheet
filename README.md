@@ -27,3 +27,7 @@ Then add the dependency to PowerBottomSheet
 ## Usage
 
 Check the sample project for examples of how to include this in your project.
+
+## Example
+
+![Bottom Sheet](media/bottom_sheet2.gif)
